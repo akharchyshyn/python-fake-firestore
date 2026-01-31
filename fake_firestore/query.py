@@ -190,5 +190,118 @@ class FakeQuery:
             raise ValueError(f"Unknown operator: {op}")
 
 
-# Backward compatibility alias
+class FakeCollectionGroup(FakeQuery):
+    """Query that spans multiple collections with the same name."""
+
+    def __init__(
+        self,
+        collections: List[FakeCollectionReference],
+        projection: Any = None,
+        field_filters: Tuple[Tuple[str, str, Any], ...] = (),
+        orders: Tuple[Tuple[str, Optional[str]], ...] = (),
+        limit: Optional[int] = None,
+        offset: Optional[int] = None,
+        start_at: Optional[Tuple[Union[Dict[str, Any], FakeDocumentSnapshot], bool]] = None,
+        end_at: Optional[Tuple[Union[Dict[str, Any], FakeDocumentSnapshot], bool]] = None,
+    ) -> None:
+        self._collections = collections
+        self.projection = projection
+        self._field_filters = []
+        self.orders = list(orders)
+        self._limit = limit
+        self._offset = offset
+        self._start_at = start_at
+        self._end_at = end_at
+        self.all_descendants = True
+
+        if field_filters:
+            for field_filter in field_filters:
+                self._add_field_filter(*field_filter)
+
+    def _get_all_snapshots(self) -> Iterator[FakeDocumentSnapshot]:
+        """Iterate over all documents from all collections."""
+        for collection in self._collections:
+            yield from collection.stream()
+
+    def stream(self, transaction: Any = None) -> Iterator[FakeDocumentSnapshot]:
+        doc_snapshots: Iterable[FakeDocumentSnapshot] = list(self._get_all_snapshots())
+
+        for field, compare, value in self._field_filters:
+            doc_snapshots = [
+                doc_snapshot
+                for doc_snapshot in doc_snapshots
+                if compare(doc_snapshot._get_by_field_path(field), value)
+            ]
+
+        if self.orders:
+            for key, direction in self.orders:
+                doc_snapshots = sorted(
+                    doc_snapshots,
+                    key=lambda doc: doc.to_dict()[key],
+                    reverse=direction == "DESCENDING",
+                )
+
+        if self._start_at:
+            document_fields_or_snapshot, before = self._start_at
+            result = self._apply_cursor(document_fields_or_snapshot, doc_snapshots, before, True)
+            if result is not None:
+                doc_snapshots = result
+
+        if self._end_at:
+            document_fields_or_snapshot, before = self._end_at
+            result = self._apply_cursor(document_fields_or_snapshot, doc_snapshots, before, False)
+            if result is not None:
+                doc_snapshots = result
+
+        if self._offset:
+            doc_snapshots = islice(doc_snapshots, self._offset, None)
+
+        if self._limit:
+            doc_snapshots = islice(doc_snapshots, self._limit)
+
+        return iter(doc_snapshots)
+
+    def where(self, field: str, op: str, value: Any) -> FakeCollectionGroup:
+        self._add_field_filter(field, op, value)
+        return self
+
+    def order_by(self, key: str, direction: Optional[str] = "ASCENDING") -> FakeCollectionGroup:
+        self.orders.append((key, direction))
+        return self
+
+    def limit(self, limit_amount: int) -> FakeCollectionGroup:
+        self._limit = limit_amount
+        return self
+
+    def offset(self, offset_amount: int) -> FakeCollectionGroup:
+        self._offset = offset_amount
+        return self
+
+    def start_at(
+        self, document_fields_or_snapshot: Union[Dict[str, Any], FakeDocumentSnapshot]
+    ) -> FakeCollectionGroup:
+        self._start_at = (document_fields_or_snapshot, True)
+        return self
+
+    def start_after(
+        self, document_fields_or_snapshot: Union[Dict[str, Any], FakeDocumentSnapshot]
+    ) -> FakeCollectionGroup:
+        self._start_at = (document_fields_or_snapshot, False)
+        return self
+
+    def end_at(
+        self, document_fields_or_snapshot: Union[Dict[str, Any], FakeDocumentSnapshot]
+    ) -> FakeCollectionGroup:
+        self._end_at = (document_fields_or_snapshot, True)
+        return self
+
+    def end_before(
+        self, document_fields_or_snapshot: Union[Dict[str, Any], FakeDocumentSnapshot]
+    ) -> FakeCollectionGroup:
+        self._end_at = (document_fields_or_snapshot, False)
+        return self
+
+
+# Backward compatibility aliases
 Query = FakeQuery
+CollectionGroup = FakeCollectionGroup
