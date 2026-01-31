@@ -67,3 +67,40 @@ class TestTransaction(TestCase):
             transaction.delete(doc)
         doc = self.fs.collection("foo").document("first").get()
         self.assertEqual(False, doc.exists)
+
+
+class TestWriteBatch(TestCase):
+    def setUp(self) -> None:
+        self.fs = MockFirestore()
+        self.fs._data = {"foo": {"first": {"id": 1}, "second": {"id": 2}}}
+
+    def test_batch_set_commit_writesDocuments(self):
+        batch = self.fs.batch()
+        doc_content = [{"id": "3"}, {"id": "4"}]
+        doc_refs = [
+            self.fs.collection("foo").document("third"),
+            self.fs.collection("foo").document("fourth"),
+        ]
+        for doc_ref, content in zip(doc_refs, doc_content):
+            batch.set(doc_ref, content)
+        results = batch.commit()
+        self.assertEqual(len(results), 2)
+        for doc_ref, content in zip(doc_refs, doc_content):
+            self.assertEqual(doc_ref.get().to_dict(), content)
+
+    def test_batch_update_and_delete(self):
+        batch = self.fs.batch()
+        first = self.fs.collection("foo").document("first")
+        second = self.fs.collection("foo").document("second")
+        batch.update(first, {"updated": True})
+        batch.delete(second)
+        results = batch.commit()
+        self.assertEqual(len(results), 2)
+        self.assertEqual(first.get().to_dict(), {"id": 1, "updated": True})
+        self.assertEqual(False, second.get().exists)
+
+    def test_batch_contextManager_commitsOnExit(self):
+        doc_ref = self.fs.collection("foo").document("third")
+        with self.fs.batch() as batch:
+            batch.set(doc_ref, {"id": 3})
+        self.assertEqual(doc_ref.get().to_dict(), {"id": 3})

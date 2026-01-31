@@ -74,7 +74,11 @@ class FakeDocumentReference:
         return self._path[-1]
 
     def get(self) -> FakeDocumentSnapshot:
-        return FakeDocumentSnapshot(self, get_by_path(self._data, self._path))
+        try:
+            data = get_by_path(self._data, self._path)
+        except KeyError:
+            data = {}
+        return FakeDocumentSnapshot(self, data)
 
     def delete(self) -> None:
         delete_by_path(self._data, self._path)

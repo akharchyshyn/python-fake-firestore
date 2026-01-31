@@ -27,7 +27,12 @@ from fake_firestore.document import (
     FakeDocumentSnapshot,
 )
 from fake_firestore.query import CollectionGroup, FakeCollectionGroup, FakeQuery, Query
-from fake_firestore.transaction import FakeTransaction, Transaction
+from fake_firestore.transaction import (
+    FakeTransaction,
+    FakeWriteBatch,
+    Transaction,
+    WriteBatch,
+)
 
 __all__ = [
     # Exceptions
@@ -43,6 +48,7 @@ __all__ = [
     "FakeDocumentSnapshot",
     "FakeQuery",
     "FakeTransaction",
+    "FakeWriteBatch",
     # Backward compatibility aliases
     "MockFirestore",
     "CollectionReference",
@@ -51,6 +57,7 @@ __all__ = [
     "DocumentSnapshot",
     "Query",
     "Transaction",
+    "WriteBatch",
     # Helpers
     "Timestamp",
 ]

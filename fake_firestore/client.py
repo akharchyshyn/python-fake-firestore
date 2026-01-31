@@ -5,7 +5,7 @@ from typing import Any, Dict, Iterable, Iterator, List, Optional, Sequence, Unio
 from fake_firestore.collection import FakeCollectionReference
 from fake_firestore.document import FakeDocumentReference, FakeDocumentSnapshot
 from fake_firestore.query import FakeCollectionGroup
-from fake_firestore.transaction import FakeTransaction
+from fake_firestore.transaction import FakeTransaction, FakeWriteBatch
 
 
 class FakeFirestoreClient:
@@ -111,6 +111,9 @@ class FakeFirestoreClient:
 
     def transaction(self, **kwargs: Any) -> FakeTransaction:
         return FakeTransaction(self, **kwargs)
+
+    def batch(self) -> FakeWriteBatch:
+        return FakeWriteBatch(self)
 
 
 # Backward compatibility alias

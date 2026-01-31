@@ -145,5 +145,68 @@ class FakeTransaction:
             self.commit()
 
 
-# Backward compatibility alias
+class FakeWriteBatch:
+    """
+    Fake implementation of WriteBatch for batching multiple write operations.
+    https://googleapis.dev/python/firestore/latest/batch.html
+    """
+
+    def __init__(self, client: FakeFirestoreClient) -> None:
+        self._client = client
+        self._write_ops: List[Callable[[], None]] = []
+
+    def create(
+        self, reference: FakeDocumentReference, document_data: Dict[str, Any]
+    ) -> FakeWriteBatch:
+        write_op = partial(reference.set, document_data)
+        self._write_ops.append(write_op)
+        return self
+
+    def set(
+        self,
+        reference: FakeDocumentReference,
+        document_data: Dict[str, Any],
+        merge: bool = False,
+    ) -> FakeWriteBatch:
+        write_op = partial(reference.set, document_data, merge=merge)
+        self._write_ops.append(write_op)
+        return self
+
+    def update(
+        self,
+        reference: FakeDocumentReference,
+        field_updates: Dict[str, Any],
+        option: Any = None,
+    ) -> FakeWriteBatch:
+        write_op = partial(reference.update, field_updates)
+        self._write_ops.append(write_op)
+        return self
+
+    def delete(self, reference: FakeDocumentReference, option: Any = None) -> FakeWriteBatch:
+        self._write_ops.append(reference.delete)
+        return self
+
+    def commit(self) -> List[WriteResult]:
+        results: List[WriteResult] = []
+        for write_op in self._write_ops:
+            write_op()
+            results.append(WriteResult())
+        self._write_ops.clear()
+        return results
+
+    def __enter__(self) -> FakeWriteBatch:
+        return self
+
+    def __exit__(
+        self,
+        exc_type: Optional[type],
+        exc_val: Optional[BaseException],
+        exc_tb: Optional[TracebackType],
+    ) -> None:
+        if exc_type is None:
+            self.commit()
+
+
+# Backward compatibility aliases
 Transaction = FakeTransaction
+WriteBatch = FakeWriteBatch
