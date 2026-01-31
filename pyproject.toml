@@ -6,8 +6,8 @@ readme = "README.md"
 license = "MIT"
 authors = ["Matt Dowds", "Artem Kharchyshyn <xapart8@gmail.com>"]
 maintainers = ["Artem Kharchyshyn <xapart8@gmail.com>"]
-homepage = "https://github.com/mdowds/mock-firestore"
-repository = "https://github.com/mdowds/mock-firestore"
+homepage = "https://github.com/akharchyshyn/python-fake-firestore"
+repository = "https://github.com/akharchyshyn/python-fake-firestore"
 keywords = ["firestore", "gcp", "testing", "fake", "pytest", "asyncio"]
 packages = [{ include = "fake_firestore" }]
 classifiers = [
