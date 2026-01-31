@@ -4,6 +4,7 @@ from typing import Any, Dict, Iterable, Iterator, List, Optional, Sequence, Unio
 
 from fake_firestore.collection import FakeCollectionReference
 from fake_firestore.document import FakeDocumentReference, FakeDocumentSnapshot
+from fake_firestore.query import FakeCollectionGroup
 from fake_firestore.transaction import FakeTransaction
 
 
@@ -61,6 +62,43 @@ class FakeFirestoreClient:
 
     def reset(self) -> None:
         self._data = {}
+
+    def _find_collections_by_name(
+        self,
+        data: Dict[str, Any],
+        name: str,
+        current_path: List[str],
+        is_collection_level: bool = True,
+    ) -> List[List[str]]:
+        """Recursively find all collection paths with the given name."""
+        paths: List[List[str]] = []
+
+        for key, value in data.items():
+            if is_collection_level:
+                # At collection level
+                new_path = current_path + [key]
+                if key == name:
+                    paths.append(new_path)
+                # Recurse into documents
+                if isinstance(value, dict):
+                    paths.extend(self._find_collections_by_name(value, name, new_path, False))
+            else:
+                # At document level - recurse into subcollections
+                if isinstance(value, dict):
+                    new_path = current_path + [key]
+                    paths.extend(self._find_collections_by_name(value, name, new_path, True))
+
+        return paths
+
+    def collection_group(self, collection_id: str) -> FakeCollectionGroup:
+        """Query across all collections with the given name."""
+        if "/" in collection_id:
+            raise ValueError(
+                f"Invalid collection_id '{collection_id}'. " "Collection IDs must not contain '/'."
+            )
+        paths = self._find_collections_by_name(self._data, collection_id, [])
+        collections = [FakeCollectionReference(self._data, path) for path in paths]
+        return FakeCollectionGroup(collections)
 
     def get_all(
         self,

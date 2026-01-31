@@ -26,7 +26,7 @@ from fake_firestore.document import (
     FakeDocumentReference,
     FakeDocumentSnapshot,
 )
-from fake_firestore.query import FakeQuery, Query
+from fake_firestore.query import CollectionGroup, FakeCollectionGroup, FakeQuery, Query
 from fake_firestore.transaction import FakeTransaction, Transaction
 
 __all__ = [
@@ -38,6 +38,7 @@ __all__ = [
     # New names
     "FakeFirestoreClient",
     "FakeCollectionReference",
+    "FakeCollectionGroup",
     "FakeDocumentReference",
     "FakeDocumentSnapshot",
     "FakeQuery",
@@ -45,6 +46,7 @@ __all__ = [
     # Backward compatibility aliases
     "MockFirestore",
     "CollectionReference",
+    "CollectionGroup",
     "DocumentReference",
     "DocumentSnapshot",
     "Query",
