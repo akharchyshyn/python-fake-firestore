@@ -86,9 +86,7 @@ class CollectionReference:
         query = Query(self, start_at=(document_fields_or_snapshot, False))
         return query
 
-    def end_at(
-        self, document_fields_or_snapshot: Union[Dict[str, Any], DocumentSnapshot]
-    ) -> Query:
+    def end_at(self, document_fields_or_snapshot: Union[Dict[str, Any], DocumentSnapshot]) -> Query:
         query = Query(self, end_at=(document_fields_or_snapshot, True))
         return query
 
@@ -98,9 +96,7 @@ class CollectionReference:
         query = Query(self, end_at=(document_fields_or_snapshot, False))
         return query
 
-    def list_documents(
-        self, page_size: Optional[int] = None
-    ) -> Sequence[DocumentReference]:
+    def list_documents(self, page_size: Optional[int] = None) -> Sequence[DocumentReference]:
         docs: List[DocumentReference] = []
         for key in get_by_path(self._data, self._path):
             docs.append(self.document(key))

@@ -67,17 +67,13 @@ class Query:
                 )
         if self._start_at:
             document_fields_or_snapshot, before = self._start_at
-            result = self._apply_cursor(
-                document_fields_or_snapshot, doc_snapshots, before, True
-            )
+            result = self._apply_cursor(document_fields_or_snapshot, doc_snapshots, before, True)
             if result is not None:
                 doc_snapshots = result
 
         if self._end_at:
             document_fields_or_snapshot, before = self._end_at
-            result = self._apply_cursor(
-                document_fields_or_snapshot, doc_snapshots, before, False
-            )
+            result = self._apply_cursor(document_fields_or_snapshot, doc_snapshots, before, False)
             if result is not None:
                 doc_snapshots = result
 
@@ -128,9 +124,7 @@ class Query:
         self._start_at = (document_fields_or_snapshot, False)
         return self
 
-    def end_at(
-        self, document_fields_or_snapshot: Union[Dict[str, Any], DocumentSnapshot]
-    ) -> Query:
+    def end_at(self, document_fields_or_snapshot: Union[Dict[str, Any], DocumentSnapshot]) -> Query:
         self._end_at = (document_fields_or_snapshot, True)
         return self
 

@@ -9,7 +9,6 @@ class TestTimestamp(unittest.TestCase):
         dt_timestamp = dt.now().timestamp()
         timestamp = Timestamp(dt_timestamp)
 
-        seconds, nanos = str(dt_timestamp).split('.')
+        seconds, nanos = str(dt_timestamp).split(".")
         self.assertEqual(seconds, timestamp.seconds)
         self.assertEqual(nanos, timestamp.nanos)
-

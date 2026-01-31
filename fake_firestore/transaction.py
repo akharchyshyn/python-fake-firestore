@@ -77,14 +77,10 @@ class Transaction:
         self._clean_up()
         return results
 
-    def get_all(
-        self, references: Iterable[DocumentReference]
-    ) -> Iterable[DocumentSnapshot]:
+    def get_all(self, references: Iterable[DocumentReference]) -> Iterable[DocumentSnapshot]:
         return self._client.get_all(references)
 
-    def get(
-        self, ref_or_query: Union[DocumentReference, Query]
-    ) -> Iterable[DocumentSnapshot]:
+    def get(self, ref_or_query: Union[DocumentReference, Query]) -> Iterable[DocumentSnapshot]:
         if isinstance(ref_or_query, DocumentReference):
             return self._client.get_all([ref_or_query])
         elif isinstance(ref_or_query, Query):
@@ -99,14 +95,10 @@ class Transaction:
 
     def _add_write_op(self, write_op: Callable[[], None]) -> None:
         if self._read_only:
-            raise ValueError(
-                "Cannot perform write operation in read-only transaction."
-            )
+            raise ValueError("Cannot perform write operation in read-only transaction.")
         self._write_ops.append(write_op)
 
-    def create(
-        self, reference: DocumentReference, document_data: Dict[str, Any]
-    ) -> None:
+    def create(self, reference: DocumentReference, document_data: Dict[str, Any]) -> None:
         # this is a no-op, because if we have a DocumentReference
         # it's already in the MockFirestore
         ...

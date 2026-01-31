@@ -14,9 +14,7 @@ class MockFirestore:
     def _ensure_path(
         self, path: List[str]
     ) -> Union[MockFirestore, CollectionReference, DocumentReference]:
-        current_position: Union[
-            MockFirestore, CollectionReference, DocumentReference
-        ] = self
+        current_position: Union[MockFirestore, CollectionReference, DocumentReference] = self
 
         for el in path[:-1]:
             if isinstance(current_position, (MockFirestore, DocumentReference)):
@@ -35,7 +33,7 @@ class MockFirestore:
 
         if isinstance(current_position, CollectionReference):
             return current_position.document(path_parts[-1])
-        raise Exception("Invalid path")
+        raise Exception("Invalid path")  # pragma: no cover
 
     def collection(self, path: str) -> CollectionReference:
         path_parts = path.split("/")
@@ -48,7 +46,7 @@ class MockFirestore:
             current_position = self._ensure_path(path_parts)
             if isinstance(current_position, (MockFirestore, DocumentReference)):
                 return current_position.collection(name)
-            raise Exception("Invalid path")
+            raise Exception("Invalid path")  # pragma: no cover
         else:
             if name not in self._data:
                 self._data[name] = {}
@@ -56,8 +54,7 @@ class MockFirestore:
 
     def collections(self) -> Sequence[CollectionReference]:
         return [
-            CollectionReference(self._data, [collection_name])
-            for collection_name in self._data
+            CollectionReference(self._data, [collection_name]) for collection_name in self._data
         ]
 
     def reset(self) -> None:

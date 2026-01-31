@@ -64,9 +64,7 @@ class Timestamp:
         return str(self._timestamp).split(".")[1]
 
 
-def get_document_iterator(
-    document: Dict[str, Any], prefix: str = ""
-) -> Iterator[Tuple[str, Any]]:
+def get_document_iterator(document: Dict[str, Any], prefix: str = "") -> Iterator[Tuple[str, Any]]:
     """
     :returns: (dot-delimited path, value,)
     """

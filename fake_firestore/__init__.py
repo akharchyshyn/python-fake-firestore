@@ -9,7 +9,7 @@ try:
         Conflict,
         NotFound,
     )
-except ImportError:
+except ImportError:  # pragma: no cover
     from fake_firestore.exceptions import (  # type: ignore[assignment]
         AlreadyExists,
         ClientError,

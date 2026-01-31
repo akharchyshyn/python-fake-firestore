@@ -64,9 +64,7 @@ class DocumentSnapshot:
 
 
 class DocumentReference:
-    def __init__(
-        self, data: Store, path: List[str], parent: CollectionReference
-    ) -> None:
+    def __init__(self, data: Store, path: List[str], parent: CollectionReference) -> None:
         self._data = data
         self._path = path
         self.parent = parent
