@@ -7,9 +7,9 @@
 
 > Fork of [mdowds/mock-firestore](https://github.com/mdowds/mock-firestore), originally `mock-firestore` on PyPI. This fork focuses on fake semantics and async facade.
 
-This library provides an in-memory fake implementation of Firestore APIs for tests. It is not a mocking framework; it simulates Firestore behavior and stores documents in memory.
+An in-memory fake implementation of [`google-cloud-firestore`](https://github.com/googleapis/python-firestore) for use in tests.
 
-An in-memory implementation of the [Python client library](https://github.com/googleapis/python-firestore) for Google Cloud Firestore, intended for use in tests to replace the real thing. This project is in early stages and is only a partial implementation of the real client library.
+**Important:** This library fakes [`google-cloud-firestore`](https://pypi.org/project/google-cloud-firestore/) — the official Google Cloud Firestore client library. It does **not** support `firebase_admin`.
 
 ## Installation
 
