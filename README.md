@@ -126,6 +126,35 @@ poetry install
 poetry run pytest
 ```
 
+### Contract tests with Firestore emulator
+
+Contract tests live under `tests/contract/` and can be run against the Firestore
+emulator by setting environment variables and choosing the backend:
+
+```bash
+export FIRESTORE_BACKEND=emulator
+export FIRESTORE_EMULATOR_HOST=localhost:8080
+export GOOGLE_CLOUD_PROJECT=demo-test
+poetry run pytest tests/contract
+```
+
+To run the same contract tests against the in-memory fake:
+
+```bash
+export FIRESTORE_BACKEND=fake
+poetry run pytest tests/contract
+```
+
+You can also use the helper script to run contract tests against the emulator:
+
+```bash
+chmod +x scripts/run_contract_emulator.sh
+export FIRESTORE_EMULATOR_HOST=localhost:8080
+export GOOGLE_CLOUD_PROJECT=demo-test
+export FIRESTORE_EMULATOR_LOG=/tmp/firestore-emulator.log
+./scripts/run_contract_emulator.sh
+```
+
 ## Original Contributors
 
 * [Matt Dowds](https://github.com/mdowds)
