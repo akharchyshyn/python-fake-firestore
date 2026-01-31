@@ -1,5 +1,4 @@
 from functools import partial
-import random
 from typing import Iterable, Callable
 from fake_firestore._helpers import generate_random_string, Timestamp
 from fake_firestore.document import DocumentReference, DocumentSnapshot

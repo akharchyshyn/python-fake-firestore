@@ -1,9 +1,14 @@
+from __future__ import annotations
+
 import warnings
 from itertools import islice, tee
-from typing import Iterator, Any, Optional, List, Callable, Union
+from typing import TYPE_CHECKING, Any, Callable, Iterator, Optional, Union
 
-from fake_firestore.document import DocumentSnapshot
 from fake_firestore._helpers import T
+from fake_firestore.document import DocumentSnapshot
+
+if TYPE_CHECKING:
+    from fake_firestore.collection import CollectionReference
 
 
 class Query:

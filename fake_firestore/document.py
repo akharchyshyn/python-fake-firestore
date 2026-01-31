@@ -1,8 +1,14 @@
+from __future__ import annotations
+
+import operator
 from copy import deepcopy
 from functools import reduce
-import operator
-from typing import List, Dict, Any
+from typing import TYPE_CHECKING, Any, Dict, List
+
 from fake_firestore import NotFound
+
+if TYPE_CHECKING:
+    from fake_firestore.collection import CollectionReference
 from fake_firestore._helpers import (
     Timestamp, Document, Store, get_by_path, set_by_path, delete_by_path
 )
