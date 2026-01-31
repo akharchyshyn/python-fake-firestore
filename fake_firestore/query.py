@@ -15,23 +15,23 @@ from typing import (
     Union,
 )
 
-from fake_firestore.document import DocumentSnapshot
+from fake_firestore.document import FakeDocumentSnapshot
 
 if TYPE_CHECKING:
-    from fake_firestore.collection import CollectionReference
+    from fake_firestore.collection import FakeCollectionReference
 
 
-class Query:
+class FakeQuery:
     def __init__(
         self,
-        parent: CollectionReference,
+        parent: FakeCollectionReference,
         projection: Any = None,
         field_filters: Tuple[Tuple[str, str, Any], ...] = (),
         orders: Tuple[Tuple[str, Optional[str]], ...] = (),
         limit: Optional[int] = None,
         offset: Optional[int] = None,
-        start_at: Optional[Tuple[Union[Dict[str, Any], DocumentSnapshot], bool]] = None,
-        end_at: Optional[Tuple[Union[Dict[str, Any], DocumentSnapshot], bool]] = None,
+        start_at: Optional[Tuple[Union[Dict[str, Any], FakeDocumentSnapshot], bool]] = None,
+        end_at: Optional[Tuple[Union[Dict[str, Any], FakeDocumentSnapshot], bool]] = None,
         all_descendants: bool = False,
     ) -> None:
         self.parent = parent
@@ -48,8 +48,8 @@ class Query:
             for field_filter in field_filters:
                 self._add_field_filter(*field_filter)
 
-    def stream(self, transaction: Any = None) -> Iterator[DocumentSnapshot]:
-        doc_snapshots: Iterable[DocumentSnapshot] = self.parent.stream()
+    def stream(self, transaction: Any = None) -> Iterator[FakeDocumentSnapshot]:
+        doc_snapshots: Iterable[FakeDocumentSnapshot] = self.parent.stream()
 
         for field, compare, value in self._field_filters:
             doc_snapshots = [
@@ -85,7 +85,7 @@ class Query:
 
         return iter(doc_snapshots)
 
-    def get(self) -> Iterator[DocumentSnapshot]:
+    def get(self) -> Iterator[FakeDocumentSnapshot]:
         warnings.warn(
             "Query.get is deprecated, please use Query.stream",
             category=DeprecationWarning,
@@ -96,51 +96,53 @@ class Query:
         compare = self._compare_func(op)
         self._field_filters.append((field, compare, value))
 
-    def where(self, field: str, op: str, value: Any) -> Query:
+    def where(self, field: str, op: str, value: Any) -> FakeQuery:
         self._add_field_filter(field, op, value)
         return self
 
-    def order_by(self, key: str, direction: Optional[str] = "ASCENDING") -> Query:
+    def order_by(self, key: str, direction: Optional[str] = "ASCENDING") -> FakeQuery:
         self.orders.append((key, direction))
         return self
 
-    def limit(self, limit_amount: int) -> Query:
+    def limit(self, limit_amount: int) -> FakeQuery:
         self._limit = limit_amount
         return self
 
-    def offset(self, offset_amount: int) -> Query:
+    def offset(self, offset_amount: int) -> FakeQuery:
         self._offset = offset_amount
         return self
 
     def start_at(
-        self, document_fields_or_snapshot: Union[Dict[str, Any], DocumentSnapshot]
-    ) -> Query:
+        self, document_fields_or_snapshot: Union[Dict[str, Any], FakeDocumentSnapshot]
+    ) -> FakeQuery:
         self._start_at = (document_fields_or_snapshot, True)
         return self
 
     def start_after(
-        self, document_fields_or_snapshot: Union[Dict[str, Any], DocumentSnapshot]
-    ) -> Query:
+        self, document_fields_or_snapshot: Union[Dict[str, Any], FakeDocumentSnapshot]
+    ) -> FakeQuery:
         self._start_at = (document_fields_or_snapshot, False)
         return self
 
-    def end_at(self, document_fields_or_snapshot: Union[Dict[str, Any], DocumentSnapshot]) -> Query:
+    def end_at(
+        self, document_fields_or_snapshot: Union[Dict[str, Any], FakeDocumentSnapshot]
+    ) -> FakeQuery:
         self._end_at = (document_fields_or_snapshot, True)
         return self
 
     def end_before(
-        self, document_fields_or_snapshot: Union[Dict[str, Any], DocumentSnapshot]
-    ) -> Query:
+        self, document_fields_or_snapshot: Union[Dict[str, Any], FakeDocumentSnapshot]
+    ) -> FakeQuery:
         self._end_at = (document_fields_or_snapshot, False)
         return self
 
     def _apply_cursor(
         self,
-        document_fields_or_snapshot: Union[Dict[str, Any], DocumentSnapshot],
-        doc_snapshots: Iterable[DocumentSnapshot],
+        document_fields_or_snapshot: Union[Dict[str, Any], FakeDocumentSnapshot],
+        doc_snapshots: Iterable[FakeDocumentSnapshot],
         before: bool,
         start: bool,
-    ) -> Optional[Iterator[DocumentSnapshot]]:
+    ) -> Optional[Iterator[FakeDocumentSnapshot]]:
         docs, doc_snapshot_iter = tee(doc_snapshots)
         for idx, doc in enumerate(doc_snapshot_iter):
             index: Optional[int] = None
@@ -151,7 +153,7 @@ class Query:
                     else:
                         index = None
                         break
-            elif isinstance(document_fields_or_snapshot, DocumentSnapshot):
+            elif isinstance(document_fields_or_snapshot, FakeDocumentSnapshot):
                 if doc.id == document_fields_or_snapshot.id:
                     index = idx
             if index is not None:
@@ -186,3 +188,7 @@ class Query:
             return lambda x, y: any(val in y for val in x)
         else:
             raise ValueError(f"Unknown operator: {op}")
+
+
+# Backward compatibility alias
+Query = FakeQuery

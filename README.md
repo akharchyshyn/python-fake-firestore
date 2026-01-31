@@ -22,9 +22,9 @@ Python 3.8+ is required.
 ## Usage
 
 ```python
-from fake_firestore import MockFirestore
+from fake_firestore import FakeFirestoreClient
 
-db = MockFirestore()
+db = FakeFirestoreClient()
 
 # Can be used in the same way as a firestore.Client() object would be, e.g.:
 db.collection('users').get()
@@ -32,16 +32,18 @@ db.collection('users').get()
 
 To reset the store to an empty state, use the `reset()` method:
 ```python
-db = MockFirestore()
+db = FakeFirestoreClient()
 db.reset()
 ```
+
+> **Note:** `MockFirestore` is still available as a backward compatibility alias for `FakeFirestoreClient`.
 
 ## Supported operations
 
 ```python
-from fake_firestore import MockFirestore
+from fake_firestore import FakeFirestoreClient
 
-db = MockFirestore()
+db = FakeFirestoreClient()
 
 # Collections
 db.collections()
