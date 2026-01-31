@@ -1,5 +1,10 @@
 # Fake Firestore
 
+[![CI](https://github.com/akharchyshyn/python-fake-firestore/actions/workflows/test.yml/badge.svg)](https://github.com/akharchyshyn/python-fake-firestore/actions/workflows/test.yml)
+[![PyPI version](https://badge.fury.io/py/fake-firestore.svg)](https://pypi.org/project/fake-firestore/)
+[![Python versions](https://img.shields.io/pypi/pyversions/fake-firestore.svg)](https://pypi.org/project/fake-firestore/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 > Fork of [mdowds/mock-firestore](https://github.com/mdowds/mock-firestore), originally `mock-firestore` on PyPI. This fork focuses on fake semantics and async facade.
 
 This library provides an in-memory fake implementation of Firestore APIs for tests. It is not a mocking framework; it simulates Firestore behavior and stores documents in memory.
@@ -116,7 +121,7 @@ transaction.commit()
 
 ```bash
 poetry install
-poetry run python -m unittest discover tests
+poetry run pytest
 ```
 
 ## Original Contributors
