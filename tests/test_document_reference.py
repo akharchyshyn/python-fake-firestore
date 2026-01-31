@@ -23,7 +23,7 @@ class TestDocumentReference(TestCase):
         fs.document('foo/doc1/bar/doc2').set(doc_content)
         doc = fs.document('foo/doc1/bar/doc2').get().to_dict()
         self.assertEqual(doc_content, doc)
-        
+
     def test_document_get_returnsDocument(self):
         fs = MockFirestore()
         fs._data = {'foo': {

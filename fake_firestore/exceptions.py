@@ -1,20 +1,23 @@
-class ClientError(Exception):
-    code = None
+from typing import Any, Optional
 
-    def __init__(self, message, *args):
+
+class ClientError(Exception):
+    code: Optional[int] = None
+
+    def __init__(self, message: str, *args: Any) -> None:
         self.message = message
         super().__init__(message, *args)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "{} {}".format(self.code, self.message)
 
 
 class Conflict(ClientError):
-    code = 409
+    code: Optional[int] = 409
 
 
 class NotFound(ClientError):
-    code = 404
+    code: Optional[int] = 404
 
 
 class AlreadyExists(Conflict):

@@ -1,21 +1,21 @@
-import operator
+from __future__ import annotations
+
 import random
 import string
 from datetime import datetime as dt
 from functools import reduce
-from typing import (Dict, Any, Tuple, TypeVar, Sequence, Iterator)
+from typing import Any, Dict, Iterator, Sequence, Tuple
 
-T = TypeVar('T')
 KeyValuePair = Tuple[str, Dict[str, Any]]
 Document = Dict[str, Any]
 Collection = Dict[str, Document]
 Store = Dict[str, Collection]
 
 
-def get_by_path(data: Dict[str, T], path: Sequence[str], create_nested: bool = False) -> T:
+def get_by_path(data: Dict[str, Any], path: Sequence[str], create_nested: bool = False) -> Any:
     """Access a nested object in root by item sequence."""
 
-    def get_or_create(a, b):
+    def get_or_create(a: Dict[str, Any], b: str) -> Any:
         if b not in a:
             a[b] = {}
         return a[b]
@@ -23,21 +23,23 @@ def get_by_path(data: Dict[str, T], path: Sequence[str], create_nested: bool = F
     if create_nested:
         return reduce(get_or_create, path, data)
     else:
-        return reduce(operator.getitem, path, data)
+        return reduce(lambda a, b: a[b], path, data)
 
 
-def set_by_path(data: Dict[str, T], path: Sequence[str], value: T, create_nested: bool = True):
+def set_by_path(
+    data: Dict[str, Any], path: Sequence[str], value: Any, create_nested: bool = True
+) -> None:
     """Set a value in a nested object in root by item sequence."""
     get_by_path(data, path[:-1], create_nested=True)[path[-1]] = value
 
 
-def delete_by_path(data: Dict[str, T], path: Sequence[str]):
+def delete_by_path(data: Dict[str, Any], path: Sequence[str]) -> None:
     """Delete a value in a nested object in root by item sequence."""
     del get_by_path(data, path[:-1])[path[-1]]
 
 
-def generate_random_string():
-    return ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(20))
+def generate_random_string() -> str:
+    return "".join(random.choice(string.ascii_letters + string.digits) for _ in range(20))
 
 
 class Timestamp:
@@ -45,24 +47,26 @@ class Timestamp:
     Imitates some properties of `google.protobuf.timestamp_pb2.Timestamp`
     """
 
-    def __init__(self, timestamp: float):
+    def __init__(self, timestamp: float) -> None:
         self._timestamp = timestamp
 
     @classmethod
-    def from_now(cls):
+    def from_now(cls) -> Timestamp:
         timestamp = dt.now().timestamp()
         return cls(timestamp)
 
     @property
-    def seconds(self):
-        return str(self._timestamp).split('.')[0]
+    def seconds(self) -> str:
+        return str(self._timestamp).split(".")[0]
 
     @property
-    def nanos(self):
-        return str(self._timestamp).split('.')[1]
+    def nanos(self) -> str:
+        return str(self._timestamp).split(".")[1]
 
 
-def get_document_iterator(document: Dict[str, Any], prefix: str = '') -> Iterator[Tuple[str, Any]]:
+def get_document_iterator(
+    document: Dict[str, Any], prefix: str = ""
+) -> Iterator[Tuple[str, Any]]:
     """
     :returns: (dot-delimited path, value,)
     """
@@ -74,4 +78,4 @@ def get_document_iterator(document: Dict[str, Any], prefix: str = '') -> Iterato
         if not prefix:
             yield key, value
         else:
-            yield '{}.{}'.format(prefix, key), value
+            yield "{}.{}".format(prefix, key), value

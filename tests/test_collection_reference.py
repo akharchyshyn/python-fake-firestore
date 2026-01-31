@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from fake_firestore import MockFirestore, DocumentReference, DocumentSnapshot, AlreadyExists
+from fake_firestore import AlreadyExists, DocumentReference, DocumentSnapshot, MockFirestore
 
 
 class TestCollectionReference(TestCase):
@@ -188,7 +188,9 @@ class TestCollectionReference(TestCase):
             'third': {'field': ['val3', 'val2', 'val1']}
         }}
 
-        contains_any_docs = list(fs.collection('foo').where('field', 'array_contains_any', ['val1', 'val4']).stream())
+        contains_any_docs = list(
+            fs.collection('foo').where('field', 'array_contains_any', ['val1', 'val4']).stream()
+        )
         self.assertEqual(len(contains_any_docs), 2)
         self.assertEqual({'field': ['val4']}, contains_any_docs[0].to_dict())
         self.assertEqual({'field': ['val3', 'val2', 'val1']}, contains_any_docs[1].to_dict())

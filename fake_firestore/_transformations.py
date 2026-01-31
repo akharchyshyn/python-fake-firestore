@@ -1,17 +1,22 @@
-from typing import Dict, Any, List
+from typing import Any, Dict, List
 
-from fake_firestore._helpers import get_document_iterator, get_by_path, set_by_path, delete_by_path
+from fake_firestore._helpers import (
+    delete_by_path,
+    get_by_path,
+    get_document_iterator,
+    set_by_path,
+)
 
 
-def apply_transformations(document: Dict[str, Any], data: Dict[str, Any]):
+def apply_transformations(document: Dict[str, Any], data: Dict[str, Any]) -> None:
     """Handles special fields like INCREMENT."""
-    increments = {}
-    arr_unions = {}
-    arr_deletes = {}
-    deletes = []
+    increments: Dict[str, Any] = {}
+    arr_unions: Dict[str, Any] = {}
+    arr_deletes: Dict[str, Any] = {}
+    deletes: List[str] = []
 
     for key, value in list(get_document_iterator(data)):
-        if not value.__class__.__module__.startswith('google.cloud.firestore'):
+        if not value.__class__.__module__.startswith("google.cloud.firestore"):
             # Unfortunately, we can't use `isinstance` here because that would require
             # us to declare google-cloud-firestore as a dependency for this library.
             # However, it's somewhat strange that the mocked version of the library
@@ -25,14 +30,14 @@ def apply_transformations(document: Dict[str, Any], data: Dict[str, Any]):
             continue
 
         transformer = value.__class__.__name__
-        if transformer == 'Increment':
+        if transformer == "Increment":
             increments[key] = value.value
-        elif transformer == 'ArrayUnion':
+        elif transformer == "ArrayUnion":
             arr_unions[key] = value.values
-        elif transformer == 'ArrayRemove':
+        elif transformer == "ArrayRemove":
             arr_deletes[key] = value.values
             del data[key]
-        elif transformer == 'Sentinel':
+        elif transformer == "Sentinel":
             if value.description == "Value used to delete a field in a document.":
                 deletes.append(key)
                 del data[key]
@@ -40,9 +45,9 @@ def apply_transformations(document: Dict[str, Any], data: Dict[str, Any]):
         # All other transformations can be applied as needed.
         # See #29 for tracking.
 
-    def _update_data(new_values: dict, default: Any):
+    def _update_data(new_values: Dict[str, Any], default: Any) -> None:
         for key, value in new_values.items():
-            path = key.split('.')
+            path = key.split(".")
 
             try:
                 item = get_by_path(document, path)
@@ -59,19 +64,19 @@ def apply_transformations(document: Dict[str, Any], data: Dict[str, Any]):
     _apply_arr_deletes(document, arr_deletes)
 
 
-def _apply_updates(document: Dict[str, Any], data: Dict[str, Any]):
+def _apply_updates(document: Dict[str, Any], data: Dict[str, Any]) -> None:
     for key, value in data.items():
         path = key.split(".")
         set_by_path(document, path, value, create_nested=True)
 
 
-def _apply_deletes(document: Dict[str, Any], data: List[str]):
+def _apply_deletes(document: Dict[str, Any], data: List[str]) -> None:
     for key in data:
         path = key.split(".")
         delete_by_path(document, path)
 
 
-def _apply_arr_deletes(document: Dict[str, Any], data: Dict[str, Any]):
+def _apply_arr_deletes(document: Dict[str, Any], data: Dict[str, Any]) -> None:
     for key, values_to_delete in data.items():
         path = key.split(".")
         try:

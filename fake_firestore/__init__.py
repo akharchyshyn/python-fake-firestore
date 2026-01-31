@@ -3,9 +3,14 @@
 # try to import gcloud exceptions
 # and if gcloud is not installed, define our own
 try:
-    from google.api_core.exceptions import AlreadyExists, ClientError, Conflict, NotFound
+    from google.api_core.exceptions import (
+        AlreadyExists,
+        ClientError,
+        Conflict,
+        NotFound,
+    )
 except ImportError:
-    from fake_firestore.exceptions import (
+    from fake_firestore.exceptions import (  # type: ignore[assignment]
         AlreadyExists,
         ClientError,
         Conflict,
