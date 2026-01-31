@@ -1,9 +1,9 @@
 from functools import partial
 import random
 from typing import Iterable, Callable
-from mockfirestore._helpers import generate_random_string, Timestamp
-from mockfirestore.document import DocumentReference, DocumentSnapshot
-from mockfirestore.query import Query
+from fake_firestore._helpers import generate_random_string, Timestamp
+from fake_firestore.document import DocumentReference, DocumentSnapshot
+from fake_firestore.query import Query
 
 MAX_ATTEMPTS = 5
 _MISSING_ID_TEMPLATE = "The transaction has no transaction ID, so it cannot be {}."

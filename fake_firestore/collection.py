@@ -1,10 +1,10 @@
 import warnings
 from typing import Any, List, Optional, Iterable, Dict, Tuple, Sequence, Union
 
-from mockfirestore import AlreadyExists
-from mockfirestore._helpers import generate_random_string, Store, get_by_path, set_by_path, Timestamp
-from mockfirestore.query import Query
-from mockfirestore.document import DocumentReference, DocumentSnapshot
+from fake_firestore import AlreadyExists
+from fake_firestore._helpers import generate_random_string, Store, get_by_path, set_by_path, Timestamp
+from fake_firestore.query import Query
+from fake_firestore.document import DocumentReference, DocumentSnapshot
 
 
 class CollectionReference:

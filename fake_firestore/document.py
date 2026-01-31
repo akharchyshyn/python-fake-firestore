@@ -2,11 +2,11 @@ from copy import deepcopy
 from functools import reduce
 import operator
 from typing import List, Dict, Any
-from mockfirestore import NotFound
-from mockfirestore._helpers import (
+from fake_firestore import NotFound
+from fake_firestore._helpers import (
     Timestamp, Document, Store, get_by_path, set_by_path, delete_by_path
 )
-from mockfirestore._transformations import apply_transformations
+from fake_firestore._transformations import apply_transformations
 
 
 class DocumentSnapshot:
@@ -86,7 +86,7 @@ class DocumentReference:
         apply_transformations(document, deepcopy(data))
 
     def collection(self, name) -> 'CollectionReference':
-        from mockfirestore.collection import CollectionReference
+        from fake_firestore.collection import CollectionReference
         document = get_by_path(self._data, self._path)
         new_path = self._path + [name]
         if name not in document:

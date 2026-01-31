@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from mockfirestore import MockFirestore, DocumentReference, DocumentSnapshot, AlreadyExists
+from fake_firestore import MockFirestore, DocumentReference, DocumentSnapshot, AlreadyExists
 
 
 class TestCollectionReference(TestCase):

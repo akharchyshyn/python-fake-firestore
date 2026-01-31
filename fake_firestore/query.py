@@ -2,8 +2,8 @@ import warnings
 from itertools import islice, tee
 from typing import Iterator, Any, Optional, List, Callable, Union
 
-from mockfirestore.document import DocumentSnapshot
-from mockfirestore._helpers import T
+from fake_firestore.document import DocumentSnapshot
+from fake_firestore._helpers import T
 
 
 class Query:

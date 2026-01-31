@@ -1,5 +1,5 @@
 from unittest import TestCase
-from mockfirestore import MockFirestore, Transaction
+from fake_firestore import MockFirestore, Transaction
 
 
 class TestTransaction(TestCase):

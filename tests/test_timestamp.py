@@ -1,7 +1,7 @@
 import unittest
 from datetime import datetime as dt
 
-from mockfirestore import Timestamp
+from fake_firestore import Timestamp
 
 
 class TestTimestamp(unittest.TestCase):

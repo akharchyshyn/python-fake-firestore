@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from mockfirestore import MockFirestore
+from fake_firestore import MockFirestore
 
 
 class TestMockFirestore(TestCase):

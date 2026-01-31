@@ -2,7 +2,7 @@ from unittest import TestCase
 
 from google.cloud import firestore
 
-from mockfirestore import MockFirestore, NotFound
+from fake_firestore import MockFirestore, NotFound
 
 
 class TestDocumentReference(TestCase):

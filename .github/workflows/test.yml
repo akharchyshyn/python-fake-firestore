@@ -17,7 +17,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements-dev-minimal.txt
+          pip install -e ".[dev]"
       - name: Run tests
         run: |
           python -m unittest discover tests -t /

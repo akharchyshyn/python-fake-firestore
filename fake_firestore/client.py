@@ -1,7 +1,7 @@
 from typing import Iterable, Sequence
-from mockfirestore.collection import CollectionReference
-from mockfirestore.document import DocumentReference, DocumentSnapshot
-from mockfirestore.transaction import Transaction
+from fake_firestore.collection import CollectionReference
+from fake_firestore.document import DocumentReference, DocumentSnapshot
+from fake_firestore.transaction import Transaction
 
 
 class MockFirestore:

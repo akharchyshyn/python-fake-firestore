@@ -1,6 +1,6 @@
 from typing import Dict, Any, List
 
-from mockfirestore._helpers import get_document_iterator, get_by_path, set_by_path, delete_by_path
+from fake_firestore._helpers import get_document_iterator, get_by_path, set_by_path, delete_by_path
 
 
 def apply_transformations(document: Dict[str, Any], data: Dict[str, Any]):
