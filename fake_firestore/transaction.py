@@ -4,13 +4,13 @@ from functools import partial
 from typing import TYPE_CHECKING, Any, Callable, Dict, Iterable, List, Optional, Union
 
 from fake_firestore._helpers import Timestamp, generate_random_string
-from fake_firestore.document import DocumentReference, DocumentSnapshot
-from fake_firestore.query import Query
+from fake_firestore.document import FakeDocumentReference, FakeDocumentSnapshot
+from fake_firestore.query import FakeQuery
 
 if TYPE_CHECKING:
     from types import TracebackType
 
-    from fake_firestore.client import MockFirestore
+    from fake_firestore.client import FakeFirestoreClient
 
 MAX_ATTEMPTS = 5
 _MISSING_ID_TEMPLATE = "The transaction has no transaction ID, so it cannot be {}."
@@ -24,7 +24,7 @@ class WriteResult:
         self.update_time = Timestamp.from_now()
 
 
-class Transaction:
+class FakeTransaction:
     """
     This mostly follows the model from
     https://googleapis.dev/python/firestore/latest/transaction.html
@@ -32,7 +32,7 @@ class Transaction:
 
     def __init__(
         self,
-        client: MockFirestore,
+        client: FakeFirestoreClient,
         max_attempts: int = MAX_ATTEMPTS,
         read_only: bool = False,
     ) -> None:
@@ -77,13 +77,17 @@ class Transaction:
         self._clean_up()
         return results
 
-    def get_all(self, references: Iterable[DocumentReference]) -> Iterable[DocumentSnapshot]:
+    def get_all(
+        self, references: Iterable[FakeDocumentReference]
+    ) -> Iterable[FakeDocumentSnapshot]:
         return self._client.get_all(references)
 
-    def get(self, ref_or_query: Union[DocumentReference, Query]) -> Iterable[DocumentSnapshot]:
-        if isinstance(ref_or_query, DocumentReference):
+    def get(
+        self, ref_or_query: Union[FakeDocumentReference, FakeQuery]
+    ) -> Iterable[FakeDocumentSnapshot]:
+        if isinstance(ref_or_query, FakeDocumentReference):
             return self._client.get_all([ref_or_query])
-        elif isinstance(ref_or_query, Query):
+        elif isinstance(ref_or_query, FakeQuery):
             return ref_or_query.stream()
         else:
             raise ValueError(
@@ -98,14 +102,14 @@ class Transaction:
             raise ValueError("Cannot perform write operation in read-only transaction.")
         self._write_ops.append(write_op)
 
-    def create(self, reference: DocumentReference, document_data: Dict[str, Any]) -> None:
+    def create(self, reference: FakeDocumentReference, document_data: Dict[str, Any]) -> None:
         # this is a no-op, because if we have a DocumentReference
         # it's already in the MockFirestore
         ...
 
     def set(
         self,
-        reference: DocumentReference,
+        reference: FakeDocumentReference,
         document_data: Dict[str, Any],
         merge: bool = False,
     ) -> None:
@@ -114,21 +118,21 @@ class Transaction:
 
     def update(
         self,
-        reference: DocumentReference,
+        reference: FakeDocumentReference,
         field_updates: Dict[str, Any],
         option: Any = None,
     ) -> None:
         write_op = partial(reference.update, field_updates)
         self._add_write_op(write_op)
 
-    def delete(self, reference: DocumentReference, option: Any = None) -> None:
+    def delete(self, reference: FakeDocumentReference, option: Any = None) -> None:
         write_op = reference.delete
         self._add_write_op(write_op)
 
     def commit(self) -> List[WriteResult]:
         return self._commit()
 
-    def __enter__(self) -> Transaction:
+    def __enter__(self) -> FakeTransaction:
         return self
 
     def __exit__(
@@ -139,3 +143,7 @@ class Transaction:
     ) -> None:
         if exc_type is None:
             self.commit()
+
+
+# Backward compatibility alias
+Transaction = FakeTransaction

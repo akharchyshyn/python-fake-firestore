@@ -17,11 +17,11 @@ from fake_firestore._helpers import (
 from fake_firestore._transformations import apply_transformations
 
 if TYPE_CHECKING:
-    from fake_firestore.collection import CollectionReference
+    from fake_firestore.collection import FakeCollectionReference
 
 
-class DocumentSnapshot:
-    def __init__(self, reference: DocumentReference, data: Document) -> None:
+class FakeDocumentSnapshot:
+    def __init__(self, reference: FakeDocumentReference, data: Document) -> None:
         self.reference = reference
         self._doc = deepcopy(data)
 
@@ -63,8 +63,8 @@ class DocumentSnapshot:
             return None
 
 
-class DocumentReference:
-    def __init__(self, data: Store, path: List[str], parent: CollectionReference) -> None:
+class FakeDocumentReference:
+    def __init__(self, data: Store, path: List[str], parent: FakeCollectionReference) -> None:
         self._data = data
         self._path = path
         self.parent = parent
@@ -73,8 +73,8 @@ class DocumentReference:
     def id(self) -> str:
         return self._path[-1]
 
-    def get(self) -> DocumentSnapshot:
-        return DocumentSnapshot(self, get_by_path(self._data, self._path))
+    def get(self) -> FakeDocumentSnapshot:
+        return FakeDocumentSnapshot(self, get_by_path(self._data, self._path))
 
     def delete(self) -> None:
         delete_by_path(self._data, self._path)
@@ -95,11 +95,16 @@ class DocumentReference:
 
         apply_transformations(document, deepcopy(data))
 
-    def collection(self, name: str) -> CollectionReference:
-        from fake_firestore.collection import CollectionReference
+    def collection(self, name: str) -> FakeCollectionReference:
+        from fake_firestore.collection import FakeCollectionReference
 
         document = get_by_path(self._data, self._path)
         new_path = self._path + [name]
         if name not in document:
             set_by_path(self._data, new_path, {})
-        return CollectionReference(self._data, new_path, parent=self)
+        return FakeCollectionReference(self._data, new_path, parent=self)
+
+
+# Backward compatibility aliases
+DocumentSnapshot = FakeDocumentSnapshot
+DocumentReference = FakeDocumentReference

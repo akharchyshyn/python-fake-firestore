@@ -18,22 +18,37 @@ except ImportError:  # pragma: no cover
     )
 
 from fake_firestore._helpers import Timestamp
-from fake_firestore.client import MockFirestore
-from fake_firestore.collection import CollectionReference
-from fake_firestore.document import DocumentReference, DocumentSnapshot
-from fake_firestore.query import Query
-from fake_firestore.transaction import Transaction
+from fake_firestore.client import FakeFirestoreClient, MockFirestore
+from fake_firestore.collection import CollectionReference, FakeCollectionReference
+from fake_firestore.document import (
+    DocumentReference,
+    DocumentSnapshot,
+    FakeDocumentReference,
+    FakeDocumentSnapshot,
+)
+from fake_firestore.query import FakeQuery, Query
+from fake_firestore.transaction import FakeTransaction, Transaction
 
 __all__ = [
+    # Exceptions
     "AlreadyExists",
     "ClientError",
-    "CollectionReference",
     "Conflict",
+    "NotFound",
+    # New names
+    "FakeFirestoreClient",
+    "FakeCollectionReference",
+    "FakeDocumentReference",
+    "FakeDocumentSnapshot",
+    "FakeQuery",
+    "FakeTransaction",
+    # Backward compatibility aliases
+    "MockFirestore",
+    "CollectionReference",
     "DocumentReference",
     "DocumentSnapshot",
-    "MockFirestore",
-    "NotFound",
     "Query",
-    "Timestamp",
     "Transaction",
+    # Helpers
+    "Timestamp",
 ]
