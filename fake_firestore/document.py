@@ -5,7 +5,7 @@ from copy import deepcopy
 from functools import reduce
 from typing import TYPE_CHECKING, Any, Dict, List
 
-from fake_firestore import NotFound
+from fake_firestore import AlreadyExists, NotFound
 from fake_firestore._helpers import (
     Document,
     Store,
@@ -79,6 +79,19 @@ class FakeDocumentReference:
         except KeyError:
             data = {}
         return FakeDocumentSnapshot(self, data)
+
+    def create(self, data: Dict[str, Any]) -> None:
+        """Create a new document with the given data.
+
+        Raises AlreadyExists if the document already exists.
+        """
+        try:
+            existing = get_by_path(self._data, self._path)
+            if existing != {}:
+                raise AlreadyExists(f"Document already exists: {self._path}")  # type: ignore[no-untyped-call]
+        except KeyError:
+            pass
+        set_by_path(self._data, self._path, deepcopy(data))
 
     def delete(self) -> None:
         delete_by_path(self._data, self._path)

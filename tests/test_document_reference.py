@@ -2,7 +2,7 @@ from unittest import TestCase
 
 from google.cloud import firestore
 
-from fake_firestore import MockFirestore, NotFound
+from fake_firestore import AlreadyExists, MockFirestore, NotFound
 
 
 class TestDocumentReference(TestCase):
@@ -195,6 +195,32 @@ class TestDocumentReference(TestCase):
         coll = fs.collection("foo")
         document = coll.document("first")
         self.assertIs(document.parent, coll)
+
+    def test_document_create_createsNewDocument(self):
+        fs = MockFirestore()
+        fs._data = {"foo": {}}
+        doc_content = {"id": "bar"}
+        fs.collection("foo").document("bar").create(doc_content)
+        doc = fs.collection("foo").document("bar").get().to_dict()
+        self.assertEqual(doc_content, doc)
+
+    def test_document_create_raisesAlreadyExistsIfDocumentExists(self):
+        fs = MockFirestore()
+        fs._data = {"foo": {"first": {"id": 1}}}
+        with self.assertRaises(AlreadyExists):
+            fs.collection("foo").document("first").create({"id": 2})
+        # Verify the original document is unchanged
+        doc = fs.collection("foo").document("first").get().to_dict()
+        self.assertEqual({"id": 1}, doc)
+
+    def test_document_create_isolation(self):
+        fs = MockFirestore()
+        fs._data = {"foo": {}}
+        doc_content = {"id": "bar"}
+        fs.collection("foo").document("bar").create(doc_content)
+        doc_content["id"] = "new value"
+        doc = fs.collection("foo").document("bar").get().to_dict()
+        self.assertEqual({"id": "bar"}, doc)
 
     def test_document_update_transformerArrayUnionBasic(self):
         fs = MockFirestore()
