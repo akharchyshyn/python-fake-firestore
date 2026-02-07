@@ -103,7 +103,7 @@ class FakeQuery:
     def _apply_projection(
         self, doc_snapshots: Iterable[FakeDocumentSnapshot]
     ) -> Iterator[FakeDocumentSnapshot]:
-        fields = self._projection
+        fields = self._projection or []
         for snap in doc_snapshots:
             data = snap.to_dict()
             if data is None:
