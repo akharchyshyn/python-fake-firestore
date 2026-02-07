@@ -92,3 +92,20 @@ def test_contract_transactional_decorator_rolls_back_on_error(
         failing_update(transaction, doc_ref)
 
     assert doc_ref.get().to_dict() == {"value": "original"}
+
+
+def test_contract_snapshot_get_does_not_accept_transaction(
+    fs: MockFirestore, collection_name: str
+) -> None:
+    """DocumentSnapshot.get() should only accept a field_path, not a transaction kwarg."""
+    doc_ref = fs.collection(collection_name).document("doc")
+    doc_ref.set({"name": "Alice"})
+    snapshot = doc_ref.get()
+
+    # Real Firestore's DocumentSnapshot.get() signature is get(field_path)
+    # It should NOT accept a transaction keyword argument
+    import inspect
+
+    sig = inspect.signature(snapshot.get)
+    param_names = list(sig.parameters.keys())
+    assert "transaction" not in param_names

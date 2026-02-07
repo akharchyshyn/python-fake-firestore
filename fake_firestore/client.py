@@ -11,6 +11,7 @@ from fake_firestore.transaction import FakeTransaction, FakeWriteBatch
 class FakeFirestoreClient:
     def __init__(self) -> None:
         self._data: Dict[str, Any] = {}
+        self._written_docs: set[tuple[str, ...]] = set()
 
     def _ensure_path(
         self, path: List[str]
@@ -53,15 +54,17 @@ class FakeFirestoreClient:
         else:
             if name not in self._data:
                 self._data[name] = {}
-            return FakeCollectionReference(self._data, [name])
+            return FakeCollectionReference(self._data, [name], written_docs=self._written_docs)
 
     def collections(self) -> Sequence[FakeCollectionReference]:
         return [
-            FakeCollectionReference(self._data, [collection_name]) for collection_name in self._data
+            FakeCollectionReference(self._data, [collection_name], written_docs=self._written_docs)
+            for collection_name in self._data
         ]
 
     def reset(self) -> None:
         self._data = {}
+        self._written_docs = set()
 
     def _find_collections_by_name(
         self,
@@ -97,7 +100,10 @@ class FakeFirestoreClient:
                 f"Invalid collection_id '{collection_id}'. " "Collection IDs must not contain '/'."
             )
         paths = self._find_collections_by_name(self._data, collection_id, [])
-        collections = [FakeCollectionReference(self._data, path) for path in paths]
+        collections = [
+            FakeCollectionReference(self._data, path, written_docs=self._written_docs)
+            for path in paths
+        ]
         return FakeCollectionGroup(collections)
 
     def get_all(

@@ -53,10 +53,7 @@ class FakeDocumentSnapshot:
     def get(self, field_path: str) -> Any:
         if not self.exists or self._doc is None:
             return None
-        try:
-            return reduce(operator.getitem, field_path.split("."), self._doc)
-        except (KeyError, TypeError):
-            return None
+        return reduce(operator.getitem, field_path.split("."), self._doc)
 
     def _get_by_field_path(self, field_path: str) -> Any:
         try:
@@ -66,10 +63,19 @@ class FakeDocumentSnapshot:
 
 
 class FakeDocumentReference:
-    def __init__(self, data: Store, path: List[str], parent: FakeCollectionReference) -> None:
+    def __init__(
+        self,
+        data: Store,
+        path: List[str],
+        parent: FakeCollectionReference,
+        written_docs: set[tuple[str, ...]] | None = None,
+    ) -> None:
         self._data = data
         self._path = path
         self.parent = parent
+        self._written_docs: set[tuple[str, ...]] = (
+            written_docs if written_docs is not None else set()
+        )
 
     @property
     def id(self) -> str:
@@ -92,6 +98,8 @@ class FakeDocumentReference:
             the snapshot's ``exists`` property will be ``False`` and
             ``to_dict()`` will return ``None``.
         """
+        if tuple(self._path) not in self._written_docs:
+            return FakeDocumentSnapshot(self, None)
         try:
             data = get_by_path(self._data, self._path)
         except KeyError:
@@ -103,15 +111,14 @@ class FakeDocumentReference:
 
         Raises AlreadyExists if the document already exists.
         """
-        try:
-            get_by_path(self._data, self._path)
+        if tuple(self._path) in self._written_docs:
             raise AlreadyExists(f"Document already exists: {self._path}")  # type: ignore[no-untyped-call]
-        except KeyError:
-            pass
         set_by_path(self._data, self._path, deepcopy(data))
+        self._written_docs.add(tuple(self._path))
 
     def delete(self) -> None:
         delete_by_path(self._data, self._path)
+        self._written_docs.discard(tuple(self._path))
 
     def set(self, data: Dict[str, Any], merge: bool = False) -> None:
         if merge:
@@ -121,12 +128,12 @@ class FakeDocumentReference:
                 self.set(data)
         else:
             set_by_path(self._data, self._path, deepcopy(data))
+            self._written_docs.add(tuple(self._path))
 
     def update(self, data: Dict[str, Any]) -> None:
-        try:
-            document = get_by_path(self._data, self._path)
-        except KeyError:
+        if tuple(self._path) not in self._written_docs:
             raise NotFound("No document to update: {}".format(self._path))  # type: ignore[no-untyped-call]
+        document = get_by_path(self._data, self._path)
 
         apply_transformations(document, deepcopy(data))
 
@@ -134,7 +141,9 @@ class FakeDocumentReference:
         from fake_firestore.collection import FakeCollectionReference
 
         new_path = self._path + [name]
-        return FakeCollectionReference(self._data, new_path, parent=self)
+        return FakeCollectionReference(
+            self._data, new_path, parent=self, written_docs=self._written_docs
+        )
 
 
 # Backward compatibility aliases

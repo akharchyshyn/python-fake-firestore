@@ -20,16 +20,22 @@ class FakeCollectionReference:
         data: Store,
         path: List[str],
         parent: Optional[FakeDocumentReference] = None,
+        written_docs: Optional[set[tuple[str, ...]]] = None,
     ) -> None:
         self._data = data
         self._path = path
         self.parent = parent
+        self._written_docs: set[tuple[str, ...]] = (
+            written_docs if written_docs is not None else set()
+        )
 
     def document(self, document_id: Optional[str] = None) -> FakeDocumentReference:
         if document_id is None:
             document_id = generate_random_string()
         new_path = self._path + [document_id]
-        return FakeDocumentReference(self._data, new_path, parent=self)
+        return FakeDocumentReference(
+            self._data, new_path, parent=self, written_docs=self._written_docs
+        )
 
     def get(self) -> List[FakeDocumentSnapshot]:
         warnings.warn(
@@ -52,7 +58,9 @@ class FakeCollectionReference:
                 raise AlreadyExists("Document already exists: {}".format(new_path))  # type: ignore[no-untyped-call]
         except KeyError:
             pass
-        doc_ref = FakeDocumentReference(self._data, new_path, parent=self)
+        doc_ref = FakeDocumentReference(
+            self._data, new_path, parent=self, written_docs=self._written_docs
+        )
         doc_ref.set(document_data)
         timestamp = Timestamp.from_now()
         return timestamp, doc_ref

@@ -6,13 +6,15 @@ from fake_firestore import MockFirestore, Transaction
 class TestTransaction(TestCase):
     def setUp(self) -> None:
         self.fs = MockFirestore()
-        self.fs._data = {"foo": {"first": {"id": 1}, "second": {"id": 2}}}
+        self.fs.collection("foo").document("first").set({"id": 1})
+        self.fs.collection("foo").document("second").set({"id": 2})
 
     def test_transaction_getAll(self):
         with Transaction(self.fs) as transaction:
             transaction._begin()
             docs = [
-                self.fs.collection("foo").document(doc_name) for doc_name in self.fs._data["foo"]
+                self.fs.collection("foo").document("first"),
+                self.fs.collection("foo").document("second"),
             ]
             results = list(transaction.get_all(docs))
             returned_docs_snapshots = [result.to_dict() for result in results]
@@ -72,7 +74,8 @@ class TestTransaction(TestCase):
 class TestWriteBatch(TestCase):
     def setUp(self) -> None:
         self.fs = MockFirestore()
-        self.fs._data = {"foo": {"first": {"id": 1}, "second": {"id": 2}}}
+        self.fs.collection("foo").document("first").set({"id": 1})
+        self.fs.collection("foo").document("second").set({"id": 2})
 
     def test_batch_set_commit_writesDocuments(self):
         batch = self.fs.batch()
