@@ -433,9 +433,7 @@ class TestCollectionReference(TestCase):
                 "third": {"name": "Carol", "score": 30},
             }
         }
-        docs = list(
-            fs.collection("foo").order_by("score").limit(2).select(["name"]).stream()
-        )
+        docs = list(fs.collection("foo").order_by("score").limit(2).select(["name"]).stream())
         self.assertEqual(2, len(docs))
         self.assertEqual({"name": "Alice"}, docs[0].to_dict())
         self.assertEqual({"name": "Bob"}, docs[1].to_dict())
