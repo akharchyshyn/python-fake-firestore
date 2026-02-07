@@ -6,7 +6,8 @@ from fake_firestore import FakeFirestoreClient, MockFirestore
 class TestMockFirestore(TestCase):
     def test_client_get_all(self):
         fs = MockFirestore()
-        fs._data = {"foo": {"first": {"id": 1}, "second": {"id": 2}}}
+        fs.collection("foo").document("first").set({"id": 1})
+        fs.collection("foo").document("second").set({"id": 2})
         doc = fs.collection("foo").document("first")
         results = list(fs.get_all([doc]))
         returned_doc_snapshot = results[0].to_dict()
@@ -15,13 +16,14 @@ class TestMockFirestore(TestCase):
 
     def test_client_collections(self):
         fs = MockFirestore()
-        fs._data = {"foo": {"first": {"id": 1}, "second": {"id": 2}}, "bar": {}}
+        fs.collection("foo").document("first").set({"id": 1})
+        fs.collection("foo").document("second").set({"id": 2})
+        fs.collection("bar")  # create empty collection
         collections = fs.collections()
-        expected_collections = fs._data
 
-        self.assertEqual(len(collections), len(expected_collections))
-        for collection in collections:
-            self.assertTrue(collection._path[0] in expected_collections)
+        self.assertEqual(len(collections), 2)
+        collection_names = {c._path[0] for c in collections}
+        self.assertEqual(collection_names, {"foo", "bar"})
 
     def test_collection_group_basic(self):
         fs = FakeFirestoreClient()

@@ -53,7 +53,7 @@ class TestCollectionDeprecated(TestCase):
     def test_collection_get_deprecated(self):
         """Test that Collection.get() emits deprecation warning."""
         fs = MockFirestore()
-        fs._data = {"foo": {"first": {"id": 1}}}
+        fs.collection("foo").document("first").set({"id": 1})
 
         with warnings.catch_warnings(record=True) as w:
             warnings.simplefilter("always")
@@ -69,7 +69,7 @@ class TestQueryEdgeCases(TestCase):
     def test_query_get_deprecated(self):
         """Test that Query.get() emits deprecation warning."""
         fs = MockFirestore()
-        fs._data = {"foo": {"first": {"id": 1}}}
+        fs.collection("foo").document("first").set({"id": 1})
 
         with warnings.catch_warnings(record=True) as w:
             warnings.simplefilter("always")
@@ -81,7 +81,7 @@ class TestQueryEdgeCases(TestCase):
     def test_query_unknown_operator(self):
         """Test that unknown operator raises ValueError."""
         fs = MockFirestore()
-        fs._data = {"foo": {"first": {"id": 1}}}
+        fs.collection("foo").document("first").set({"id": 1})
 
         with self.assertRaises(ValueError) as ctx:
             list(fs.collection("foo").where("id", "unknown_op", 1).stream())
@@ -90,12 +90,8 @@ class TestQueryEdgeCases(TestCase):
     def test_query_cursor_no_match(self):
         """Test cursor with no matching document returns empty when no match."""
         fs = MockFirestore()
-        fs._data = {
-            "foo": {
-                "first": {"id": 1},
-                "second": {"id": 2},
-            }
-        }
+        fs.collection("foo").document("first").set({"id": 1})
+        fs.collection("foo").document("second").set({"id": 2})
         # start_at with non-existent value - cursor not found, returns empty
         docs = list(fs.collection("foo").start_at({"id": 999}).stream())
         self.assertEqual(len(docs), 0)
@@ -103,13 +99,9 @@ class TestQueryEdgeCases(TestCase):
     def test_query_chained_order_by(self):
         """Test chained order_by method."""
         fs = MockFirestore()
-        fs._data = {
-            "foo": {
-                "a": {"id": 1, "name": "z"},
-                "b": {"id": 2, "name": "y"},
-                "c": {"id": 3, "name": "x"},
-            }
-        }
+        fs.collection("foo").document("a").set({"id": 1, "name": "z"})
+        fs.collection("foo").document("b").set({"id": 2, "name": "y"})
+        fs.collection("foo").document("c").set({"id": 3, "name": "x"})
         query = fs.collection("foo").order_by("id").order_by("name")
         docs = list(query.stream())
         self.assertEqual(len(docs), 3)
@@ -117,14 +109,10 @@ class TestQueryEdgeCases(TestCase):
     def test_query_chained_limit_offset(self):
         """Test chained limit and offset methods."""
         fs = MockFirestore()
-        fs._data = {
-            "foo": {
-                "a": {"id": 1},
-                "b": {"id": 2},
-                "c": {"id": 3},
-                "d": {"id": 4},
-            }
-        }
+        fs.collection("foo").document("a").set({"id": 1})
+        fs.collection("foo").document("b").set({"id": 2})
+        fs.collection("foo").document("c").set({"id": 3})
+        fs.collection("foo").document("d").set({"id": 4})
         # Test limit
         query = fs.collection("foo").limit(2)
         docs = list(query.stream())
@@ -138,13 +126,9 @@ class TestQueryEdgeCases(TestCase):
     def test_query_chained_where(self):
         """Test chained where method on Query object."""
         fs = MockFirestore()
-        fs._data = {
-            "foo": {
-                "a": {"id": 1, "active": True},
-                "b": {"id": 2, "active": True},
-                "c": {"id": 3, "active": False},
-            }
-        }
+        fs.collection("foo").document("a").set({"id": 1, "active": True})
+        fs.collection("foo").document("b").set({"id": 2, "active": True})
+        fs.collection("foo").document("c").set({"id": 3, "active": False})
         # Chain multiple where clauses
         query = fs.collection("foo").where("active", "==", True).where("id", ">", 1)
         docs = list(query.stream())
@@ -200,7 +184,7 @@ class TestTransactionEdgeCases(TestCase):
     def test_transaction_read_only(self):
         """Test read-only transaction raises on write."""
         fs = MockFirestore()
-        fs._data = {"foo": {"first": {"id": 1}}}
+        fs.collection("foo").document("first").set({"id": 1})
         tx = Transaction(fs, read_only=True)
         tx._begin()
         doc_ref = fs.collection("foo").document("first")
@@ -211,7 +195,7 @@ class TestTransactionEdgeCases(TestCase):
     def test_transaction_create(self):
         """Test transaction.create() is no-op."""
         fs = MockFirestore()
-        fs._data = {"foo": {"first": {"id": 1}}}
+        fs.collection("foo").document("first").set({"id": 1})
         tx = Transaction(fs)
         tx._begin()
         doc_ref = fs.collection("foo").document("first")

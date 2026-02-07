@@ -4,6 +4,32 @@ All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, and this project adheres to Semantic
 Versioning.
 
+## [0.8.0] - 2026-02-07
+### Fixed
+- Documents with only subcollections (no own data) no longer incorrectly
+  appear as existing. Introduced `_written_docs` tracking to distinguish
+  explicitly written documents from intermediate paths created by
+  subcollections. Closes mdowds/python-mock-firestore#57.
+
+### Changed
+- Rewrite all unit tests to use the public API (`set()`, `create()`) instead
+  of setting `fs._data` directly.
+
+## [0.7.1] - 2026-02-07
+### Fixed
+- Resolve mypy error in `_apply_projection` with fallback for projection type.
+
+## [0.7.0] - 2026-02-07
+### Added
+- Add `select()` method to `CollectionReference`, `Query`, and
+  `CollectionGroup` for field projection.
+  Closes mdowds/python-mock-firestore#52.
+
+### Fixed
+- `Collection.get()` and `Query.get()` now return a `list` instead of a
+  generator, matching real Firestore behavior.
+  Closes mdowds/python-mock-firestore#51.
+
 ## [0.6.0] - 2026-02-07
 ### Added
 - Add `transactional` decorator for running functions inside a transaction with
@@ -11,18 +37,6 @@ Versioning.
   Closes mdowds/python-mock-firestore#50.
 - Add `transaction` keyword argument to `DocumentReference.get()`.
 - Transaction context manager now calls `_begin()` / `_rollback()` automatically.
-
-- Add `select()` method to `CollectionReference`, `Query`, and
-  `CollectionGroup` for field projection.
-  Closes mdowds/python-mock-firestore#52.
-
-### Fixed
-- `DocumentSnapshot.get()` now returns `None` for missing fields instead of
-  raising `KeyError`, matching real Firestore behavior.
-  Closes mdowds/python-mock-firestore#57.
-- `Collection.get()` and `Query.get()` now return a `list` instead of a
-  generator, matching real Firestore behavior.
-  Closes mdowds/python-mock-firestore#51.
 
 ## [0.5.0] - 2026-02-07
 ### Fixed

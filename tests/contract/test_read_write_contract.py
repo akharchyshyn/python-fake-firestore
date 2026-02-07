@@ -123,13 +123,14 @@ def test_contract_collection_get_returns_list(fs: MockFirestore, collection_name
     assert len(result) == 2
 
 
-def test_contract_snapshot_get_missing_field_returns_none(
+def test_contract_snapshot_get_missing_field_raises_key_error(
     fs: MockFirestore, collection_name: str
 ) -> None:
-    """snapshot.get() for a non-existing field should return None, not raise KeyError."""
+    """snapshot.get() for a non-existing field should raise KeyError."""
     fs.collection(collection_name).document("doc").set({"name": "Alice"})
     snapshot = fs.collection(collection_name).document("doc").get()
-    assert snapshot.get("missing_field") is None
+    with pytest.raises(KeyError):
+        snapshot.get("missing_field")
 
 
 def test_contract_snapshot_get_with_subcollection_no_data(
