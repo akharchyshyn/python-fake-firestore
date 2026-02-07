@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, and this project adheres to Semantic
 Versioning.
 
+## [0.6.0] - 2026-02-07
+### Added
+- Add `transactional` decorator for running functions inside a transaction with
+  automatic begin, commit, and retry on failure.
+  Closes mdowds/python-mock-firestore#50.
+- Add `transaction` keyword argument to `DocumentReference.get()`.
+- Transaction context manager now calls `_begin()` / `_rollback()` automatically.
+
 ## [0.5.0] - 2026-02-07
 ### Fixed
 - `document()` and `collection()` no longer create phantom empty entries in the
