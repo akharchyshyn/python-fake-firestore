@@ -133,6 +133,7 @@ class FakeTransaction:
         return self._commit()
 
     def __enter__(self) -> FakeTransaction:
+        self._begin()
         return self
 
     def __exit__(
@@ -142,7 +143,9 @@ class FakeTransaction:
         exc_tb: Optional[TracebackType],
     ) -> None:
         if exc_type is None:
-            self.commit()
+            self._commit()
+        else:
+            self._rollback()
 
 
 class FakeWriteBatch:
@@ -205,6 +208,46 @@ class FakeWriteBatch:
     ) -> None:
         if exc_type is None:
             self.commit()
+
+
+def transactional(func: Callable[..., Any]) -> _Transactional:
+    """Decorate a callable so that it runs in a transaction.
+
+    Usage mirrors ``google.cloud.firestore_v1.transactional``::
+
+        @transactional
+        def update_in_transaction(transaction, doc_ref):
+            snapshot = doc_ref.get(transaction=transaction)
+            transaction.update(doc_ref, {"count": snapshot.get("count") + 1})
+
+        transaction = db.transaction()
+        update_in_transaction(transaction, doc_ref)
+    """
+    return _Transactional(func)
+
+
+class _Transactional:
+    """Callable wrapper that runs a function inside a transaction with retries."""
+
+    def __init__(self, func: Callable[..., Any]) -> None:
+        self.to_wrap = func
+        self.current_id: Optional[str] = None
+        self.retry_id: Optional[str] = None
+
+    def __call__(self, transaction: FakeTransaction, *args: Any, **kwargs: Any) -> Any:
+        max_attempts = transaction._max_attempts
+        for attempt in range(max_attempts):
+            transaction._begin(retry_id=self.retry_id)
+            self.current_id = transaction.id
+            try:
+                result = self.to_wrap(transaction, *args, **kwargs)
+                transaction._commit()
+                return result
+            except Exception:
+                transaction._rollback()
+                self.retry_id = self.current_id
+                if attempt + 1 >= max_attempts:
+                    raise
 
 
 # Backward compatibility aliases

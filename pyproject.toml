@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "fake-firestore"
-version = "0.5.0"
+version = "0.6.0"
 description = "In-memory implementation of Google Cloud Firestore for use in tests"
 readme = "README.md"
 license = "MIT"

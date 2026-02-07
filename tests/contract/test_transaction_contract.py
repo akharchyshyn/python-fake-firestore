@@ -1,3 +1,4 @@
+import os
 from typing import Any, Callable, Optional
 
 import pytest
@@ -38,17 +39,56 @@ def test_contract_transaction_exception_does_not_apply(
 ) -> None:
     doc_ref = fs.collection(collection_name).document("boom")
 
-    transaction = fs.transaction()
-    _maybe_begin(transaction)
-
-    if hasattr(transaction, "__enter__") and hasattr(transaction, "__exit__"):
-        with pytest.raises(RuntimeError):
-            with transaction:
-                transaction.set(doc_ref, {"id": 1})
-                raise RuntimeError("boom")
-    else:
-        with pytest.raises(RuntimeError):
+    with pytest.raises(RuntimeError):
+        with fs.transaction() as transaction:
             transaction.set(doc_ref, {"id": 1})
             raise RuntimeError("boom")
 
     assert doc_ref.get().exists is False
+
+
+def _get_transactional() -> Any:
+    backend = os.getenv("FIRESTORE_BACKEND", "fake")
+    if backend == "emulator":
+        from google.cloud import firestore
+
+        return firestore.transactional
+    else:
+        from fake_firestore import transactional
+
+        return transactional
+
+
+def test_contract_transactional_decorator_commits(fs: MockFirestore, collection_name: str) -> None:
+    _transactional = _get_transactional()
+    doc_ref = fs.collection(collection_name).document("counter")
+    doc_ref.set({"count": 0})
+
+    @_transactional
+    def increment(transaction: Any, ref: Any) -> None:
+        snapshot = ref.get(transaction=transaction)
+        transaction.update(ref, {"count": snapshot.get("count") + 1})
+
+    transaction = fs.transaction()
+    increment(transaction, doc_ref)
+
+    assert doc_ref.get().to_dict() == {"count": 1}
+
+
+def test_contract_transactional_decorator_rolls_back_on_error(
+    fs: MockFirestore, collection_name: str
+) -> None:
+    _transactional = _get_transactional()
+    doc_ref = fs.collection(collection_name).document("safe")
+    doc_ref.set({"value": "original"})
+
+    @_transactional
+    def failing_update(transaction: Any, ref: Any) -> None:
+        transaction.update(ref, {"value": "changed"})
+        raise RuntimeError("something went wrong")
+
+    transaction = fs.transaction()
+    with pytest.raises(RuntimeError):
+        failing_update(transaction, doc_ref)
+
+    assert doc_ref.get().to_dict() == {"value": "original"}

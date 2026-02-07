@@ -72,7 +72,23 @@ class FakeDocumentReference:
     def id(self) -> str:
         return self._path[-1]
 
-    def get(self) -> FakeDocumentSnapshot:
+    def get(self, transaction: Any = None) -> FakeDocumentSnapshot:
+        """Retrieve the document snapshot.
+
+        Args:
+            transaction: Accepted for API compatibility with
+                ``google.cloud.firestore_v1.DocumentReference.get()``.
+                In the real Firestore client the transaction parameter ensures
+                the read is performed within the given transaction's scope.
+                In this fake implementation all data lives in memory and
+                transaction isolation is not emulated, so the argument is
+                accepted but ignored.
+
+        Returns:
+            A snapshot of the document. If the document does not exist,
+            the snapshot's ``exists`` property will be ``False`` and
+            ``to_dict()`` will return ``None``.
+        """
         try:
             data = get_by_path(self._data, self._path)
         except KeyError:

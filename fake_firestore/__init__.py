@@ -32,6 +32,7 @@ from fake_firestore.transaction import (
     FakeWriteBatch,
     Transaction,
     WriteBatch,
+    transactional,
 )
 
 __all__ = [
@@ -58,6 +59,7 @@ __all__ = [
     "Query",
     "Transaction",
     "WriteBatch",
+    "transactional",
     # Helpers
     "Timestamp",
 ]
