@@ -111,3 +111,13 @@ def test_contract_create_after_get_missing_succeeds(
     doc_ref.get()  # should not create the doc
     doc_ref.create({"name": "Alice"})
     assert doc_ref.get().exists is True
+
+
+def test_contract_collection_get_returns_list(fs: MockFirestore, collection_name: str) -> None:
+    """collection.get() should return a list, not a generator."""
+    fs.collection(collection_name).document("a").set({"x": 1})
+    fs.collection(collection_name).document("b").set({"x": 2})
+
+    result = fs.collection(collection_name).get()
+    assert isinstance(result, list)
+    assert len(result) == 2

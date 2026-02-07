@@ -12,6 +12,11 @@ Versioning.
 - Add `transaction` keyword argument to `DocumentReference.get()`.
 - Transaction context manager now calls `_begin()` / `_rollback()` automatically.
 
+### Fixed
+- `Collection.get()` and `Query.get()` now return a `list` instead of a
+  generator, matching real Firestore behavior.
+  Closes mdowds/python-mock-firestore#51.
+
 ## [0.5.0] - 2026-02-07
 ### Fixed
 - `document()` and `collection()` no longer create phantom empty entries in the

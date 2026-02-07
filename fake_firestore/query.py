@@ -85,12 +85,12 @@ class FakeQuery:
 
         return iter(doc_snapshots)
 
-    def get(self) -> Iterator[FakeDocumentSnapshot]:
+    def get(self) -> List[FakeDocumentSnapshot]:
         warnings.warn(
             "Query.get is deprecated, please use Query.stream",
             category=DeprecationWarning,
         )
-        return self.stream()
+        return list(self.stream())
 
     def _add_field_filter(self, field: str, op: str, value: Any) -> None:
         compare = self._compare_func(op)

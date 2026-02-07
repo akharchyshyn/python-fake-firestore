@@ -79,3 +79,15 @@ def test_contract_array_contains(fs: MockFirestore, collection_name: str) -> Non
     ids = {snapshot.id for snapshot in snapshots}
 
     assert ids == {"a", "c"}
+
+
+def test_contract_query_get_returns_list(fs: MockFirestore, collection_name: str) -> None:
+    """query.get() should return a list, not a generator."""
+    base = fs.collection(collection_name)
+    base.document("a").set({"active": True})
+    base.document("b").set({"active": False})
+
+    result = base.where("active", "==", True).get()
+
+    assert isinstance(result, list)
+    assert len(result) == 1
