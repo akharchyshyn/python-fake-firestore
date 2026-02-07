@@ -121,3 +121,23 @@ def test_contract_collection_get_returns_list(fs: MockFirestore, collection_name
     result = fs.collection(collection_name).get()
     assert isinstance(result, list)
     assert len(result) == 2
+
+
+def test_contract_snapshot_get_missing_field_returns_none(
+    fs: MockFirestore, collection_name: str
+) -> None:
+    """snapshot.get() for a non-existing field should return None, not raise KeyError."""
+    fs.collection(collection_name).document("doc").set({"name": "Alice"})
+    snapshot = fs.collection(collection_name).document("doc").get()
+    assert snapshot.get("missing_field") is None
+
+
+def test_contract_snapshot_get_with_subcollection_no_data(
+    fs: MockFirestore, collection_name: str
+) -> None:
+    """A document with only subcollections (no own data) should return None for field access."""
+    doc_ref = fs.collection(collection_name).document("parent")
+    doc_ref.collection("items").document("item1").set({"name": "My Item"})
+
+    snapshot = doc_ref.get()
+    assert snapshot.get("name") is None
