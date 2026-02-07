@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import warnings
-from typing import Any, Dict, Iterable, Iterator, List, Optional, Sequence, Tuple, Union
+from typing import Any, Dict, Iterator, List, Optional, Sequence, Tuple, Union
 
 from fake_firestore import AlreadyExists
 from fake_firestore._helpers import (
@@ -31,12 +31,12 @@ class FakeCollectionReference:
         new_path = self._path + [document_id]
         return FakeDocumentReference(self._data, new_path, parent=self)
 
-    def get(self) -> Iterable[FakeDocumentSnapshot]:
+    def get(self) -> List[FakeDocumentSnapshot]:
         warnings.warn(
             "Collection.get is deprecated, please use Collection.stream",
             category=DeprecationWarning,
         )
-        return self.stream()
+        return list(self.stream())
 
     def add(
         self,
