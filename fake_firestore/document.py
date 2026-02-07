@@ -21,9 +21,9 @@ if TYPE_CHECKING:
 
 
 class FakeDocumentSnapshot:
-    def __init__(self, reference: FakeDocumentReference, data: Document) -> None:
+    def __init__(self, reference: FakeDocumentReference, data: Document | None) -> None:
         self.reference = reference
-        self._doc = deepcopy(data)
+        self._doc = deepcopy(data) if data is not None else None
 
     @property
     def id(self) -> str:
@@ -31,9 +31,9 @@ class FakeDocumentSnapshot:
 
     @property
     def exists(self) -> bool:
-        return self._doc != {}
+        return self._doc is not None
 
-    def to_dict(self) -> Document:
+    def to_dict(self) -> Document | None:
         return self._doc
 
     @property
@@ -51,10 +51,9 @@ class FakeDocumentSnapshot:
         return timestamp
 
     def get(self, field_path: str) -> Any:
-        if not self.exists:
+        if not self.exists or self._doc is None:
             return None
-        else:
-            return reduce(operator.getitem, field_path.split("."), self._doc)
+        return reduce(operator.getitem, field_path.split("."), self._doc)
 
     def _get_by_field_path(self, field_path: str) -> Any:
         try:
@@ -77,7 +76,7 @@ class FakeDocumentReference:
         try:
             data = get_by_path(self._data, self._path)
         except KeyError:
-            data = {}
+            data = None
         return FakeDocumentSnapshot(self, data)
 
     def create(self, data: Dict[str, Any]) -> None:
@@ -86,9 +85,8 @@ class FakeDocumentReference:
         Raises AlreadyExists if the document already exists.
         """
         try:
-            existing = get_by_path(self._data, self._path)
-            if existing != {}:
-                raise AlreadyExists(f"Document already exists: {self._path}")  # type: ignore[no-untyped-call]
+            get_by_path(self._data, self._path)
+            raise AlreadyExists(f"Document already exists: {self._path}")  # type: ignore[no-untyped-call]
         except KeyError:
             pass
         set_by_path(self._data, self._path, deepcopy(data))
@@ -106,8 +104,9 @@ class FakeDocumentReference:
             set_by_path(self._data, self._path, deepcopy(data))
 
     def update(self, data: Dict[str, Any]) -> None:
-        document = get_by_path(self._data, self._path)
-        if document == {}:
+        try:
+            document = get_by_path(self._data, self._path)
+        except KeyError:
             raise NotFound("No document to update: {}".format(self._path))  # type: ignore[no-untyped-call]
 
         apply_transformations(document, deepcopy(data))
@@ -115,10 +114,7 @@ class FakeDocumentReference:
     def collection(self, name: str) -> FakeCollectionReference:
         from fake_firestore.collection import FakeCollectionReference
 
-        document = get_by_path(self._data, self._path)
         new_path = self._path + [name]
-        if name not in document:
-            set_by_path(self._data, new_path, {})
         return FakeCollectionReference(self._data, new_path, parent=self)
 
 
