@@ -17,6 +17,9 @@ Versioning.
   Closes mdowds/python-mock-firestore#52.
 
 ### Fixed
+- `DocumentSnapshot.get()` now returns `None` for missing fields instead of
+  raising `KeyError`, matching real Firestore behavior.
+  Closes mdowds/python-mock-firestore#57.
 - `Collection.get()` and `Query.get()` now return a `list` instead of a
   generator, matching real Firestore behavior.
   Closes mdowds/python-mock-firestore#51.

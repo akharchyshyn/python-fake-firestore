@@ -53,7 +53,10 @@ class FakeDocumentSnapshot:
     def get(self, field_path: str) -> Any:
         if not self.exists or self._doc is None:
             return None
-        return reduce(operator.getitem, field_path.split("."), self._doc)
+        try:
+            return reduce(operator.getitem, field_path.split("."), self._doc)
+        except (KeyError, TypeError):
+            return None
 
     def _get_by_field_path(self, field_path: str) -> Any:
         try:
