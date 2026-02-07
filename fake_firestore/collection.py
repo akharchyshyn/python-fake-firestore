@@ -57,6 +57,10 @@ class FakeCollectionReference:
         timestamp = Timestamp.from_now()
         return timestamp, doc_ref
 
+    def select(self, field_paths: Sequence[str]) -> FakeQuery:
+        query = FakeQuery(self, projection=field_paths)
+        return query
+
     def where(self, field: str, op: str, value: Any) -> FakeQuery:
         query = FakeQuery(self, field_filters=((field, op, value),))
         return query
