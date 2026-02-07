@@ -91,3 +91,51 @@ def test_contract_query_get_returns_list(fs: MockFirestore, collection_name: str
 
     assert isinstance(result, list)
     assert len(result) == 1
+
+
+def test_contract_select_returns_only_specified_fields(
+    fs: MockFirestore, collection_name: str
+) -> None:
+    """select() should return snapshots containing only the requested fields."""
+    base = fs.collection(collection_name)
+    base.document("a").set({"name": "Alice", "age": 30, "city": "Kyiv"})
+    base.document("b").set({"name": "Bob", "age": 25, "city": "Lviv"})
+
+    snapshots = list(base.select(["name", "age"]).stream())
+
+    assert len(snapshots) == 2
+    for snap in snapshots:
+        data = snap.to_dict()
+        assert "name" in data
+        assert "age" in data
+        assert "city" not in data
+
+
+def test_contract_select_empty_fields_returns_empty_dicts(
+    fs: MockFirestore, collection_name: str
+) -> None:
+    """select([]) should return snapshots with no fields (only verifies existence)."""
+    base = fs.collection(collection_name)
+    base.document("a").set({"name": "Alice"})
+
+    snapshots = list(base.select([]).stream())
+
+    assert len(snapshots) == 1
+    assert snapshots[0].to_dict() == {}
+
+
+def test_contract_select_with_where(fs: MockFirestore, collection_name: str) -> None:
+    """select() combined with where() should filter and project."""
+    base = fs.collection(collection_name)
+    base.document("a").set({"name": "Alice", "active": True, "score": 10})
+    base.document("b").set({"name": "Bob", "active": False, "score": 20})
+    base.document("c").set({"name": "Carol", "active": True, "score": 30})
+
+    snapshots = list(base.where("active", "==", True).select(["name"]).stream())
+
+    assert len(snapshots) == 2
+    for snap in snapshots:
+        data = snap.to_dict()
+        assert "name" in data
+        assert "active" not in data
+        assert "score" not in data

@@ -11,6 +11,7 @@ from typing import (
     Iterator,
     List,
     Optional,
+    Sequence,
     Tuple,
     Union,
 )
@@ -35,7 +36,7 @@ class FakeQuery:
         all_descendants: bool = False,
     ) -> None:
         self.parent = parent
-        self.projection = projection
+        self._projection: Optional[List[str]] = list(projection) if projection is not None else None
         self._field_filters: List[Tuple[str, Callable[[Any, Any], bool], Any]] = []
         self.orders: List[Tuple[str, Optional[str]]] = list(orders)
         self._limit = limit
@@ -83,6 +84,9 @@ class FakeQuery:
         if self._limit:
             doc_snapshots = islice(doc_snapshots, self._limit)
 
+        if self._projection is not None:
+            doc_snapshots = self._apply_projection(doc_snapshots)
+
         return iter(doc_snapshots)
 
     def get(self) -> List[FakeDocumentSnapshot]:
@@ -91,6 +95,22 @@ class FakeQuery:
             category=DeprecationWarning,
         )
         return list(self.stream())
+
+    def select(self, field_paths: Sequence[str]) -> FakeQuery:
+        self._projection = list(field_paths)
+        return self
+
+    def _apply_projection(
+        self, doc_snapshots: Iterable[FakeDocumentSnapshot]
+    ) -> Iterator[FakeDocumentSnapshot]:
+        fields = self._projection
+        for snap in doc_snapshots:
+            data = snap.to_dict()
+            if data is None:
+                yield snap
+            else:
+                projected = {k: v for k, v in data.items() if k in fields}
+                yield FakeDocumentSnapshot(snap.reference, projected)
 
     def _add_field_filter(self, field: str, op: str, value: Any) -> None:
         compare = self._compare_func(op)
@@ -205,7 +225,7 @@ class FakeCollectionGroup(FakeQuery):
         end_at: Optional[Tuple[Union[Dict[str, Any], FakeDocumentSnapshot], bool]] = None,
     ) -> None:
         self._collections = collections
-        self.projection = projection
+        self._projection: Optional[List[str]] = list(projection) if projection is not None else None
         self._field_filters = []
         self.orders = list(orders)
         self._limit = limit
@@ -259,7 +279,14 @@ class FakeCollectionGroup(FakeQuery):
         if self._limit:
             doc_snapshots = islice(doc_snapshots, self._limit)
 
+        if self._projection is not None:
+            doc_snapshots = self._apply_projection(doc_snapshots)
+
         return iter(doc_snapshots)
+
+    def select(self, field_paths: Sequence[str]) -> FakeCollectionGroup:
+        self._projection = list(field_paths)
+        return self
 
     def where(self, field: str, op: str, value: Any) -> FakeCollectionGroup:
         self._add_field_filter(field, op, value)

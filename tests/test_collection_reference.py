@@ -399,3 +399,43 @@ class TestCollectionReference(TestCase):
         fs._data = {"foo": {"first": {"id": 1}}}
         doc = fs.collection("foo").document(document_id="first").get()
         self.assertEqual({"id": 1}, doc.to_dict())
+
+    def test_collection_select_returnsOnlySpecifiedFields(self):
+        fs = MockFirestore()
+        fs._data = {"foo": {"first": {"name": "Alice", "age": 30, "city": "Kyiv"}}}
+        docs = list(fs.collection("foo").select(["name", "age"]).stream())
+        self.assertEqual({"name": "Alice", "age": 30}, docs[0].to_dict())
+
+    def test_collection_select_emptyList_returnsEmptyDicts(self):
+        fs = MockFirestore()
+        fs._data = {"foo": {"first": {"name": "Alice"}}}
+        docs = list(fs.collection("foo").select([]).stream())
+        self.assertEqual({}, docs[0].to_dict())
+
+    def test_collection_select_withWhere(self):
+        fs = MockFirestore()
+        fs._data = {
+            "foo": {
+                "first": {"name": "Alice", "active": True, "score": 10},
+                "second": {"name": "Bob", "active": False, "score": 20},
+            }
+        }
+        docs = list(fs.collection("foo").where("active", "==", True).select(["name"]).stream())
+        self.assertEqual(1, len(docs))
+        self.assertEqual({"name": "Alice"}, docs[0].to_dict())
+
+    def test_collection_select_withOrderByAndLimit(self):
+        fs = MockFirestore()
+        fs._data = {
+            "foo": {
+                "first": {"name": "Alice", "score": 10},
+                "second": {"name": "Bob", "score": 20},
+                "third": {"name": "Carol", "score": 30},
+            }
+        }
+        docs = list(
+            fs.collection("foo").order_by("score").limit(2).select(["name"]).stream()
+        )
+        self.assertEqual(2, len(docs))
+        self.assertEqual({"name": "Alice"}, docs[0].to_dict())
+        self.assertEqual({"name": "Bob"}, docs[1].to_dict())
