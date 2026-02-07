@@ -9,7 +9,6 @@ from fake_firestore._helpers import (
     Timestamp,
     generate_random_string,
     get_by_path,
-    set_by_path,
 )
 from fake_firestore.document import FakeDocumentReference, FakeDocumentSnapshot
 from fake_firestore.query import FakeQuery
@@ -27,12 +26,9 @@ class FakeCollectionReference:
         self.parent = parent
 
     def document(self, document_id: Optional[str] = None) -> FakeDocumentReference:
-        collection = get_by_path(self._data, self._path)
         if document_id is None:
             document_id = generate_random_string()
         new_path = self._path + [document_id]
-        if document_id not in collection:
-            set_by_path(self._data, new_path, {})
         return FakeDocumentReference(self._data, new_path, parent=self)
 
     def get(self) -> Iterable[FakeDocumentSnapshot]:
@@ -49,10 +45,13 @@ class FakeCollectionReference:
     ) -> Tuple[Timestamp, FakeDocumentReference]:
         if document_id is None:
             document_id = document_data.get("id", generate_random_string())
-        collection = get_by_path(self._data, self._path)
         new_path = self._path + [document_id]
-        if document_id in collection:
-            raise AlreadyExists("Document already exists: {}".format(new_path))  # type: ignore[no-untyped-call]
+        try:
+            collection = get_by_path(self._data, self._path)
+            if document_id in collection:
+                raise AlreadyExists("Document already exists: {}".format(new_path))  # type: ignore[no-untyped-call]
+        except KeyError:
+            pass
         doc_ref = FakeDocumentReference(self._data, new_path, parent=self)
         doc_ref.set(document_data)
         timestamp = Timestamp.from_now()
@@ -100,14 +99,23 @@ class FakeCollectionReference:
 
     def list_documents(self, page_size: Optional[int] = None) -> Sequence[FakeDocumentReference]:
         docs: List[FakeDocumentReference] = []
-        for key in get_by_path(self._data, self._path):
+        try:
+            collection = get_by_path(self._data, self._path)
+        except KeyError:
+            return docs
+        for key in collection:
             docs.append(self.document(key))
         return docs
 
     def stream(self, transaction: Any = None) -> Iterator[FakeDocumentSnapshot]:
-        for key in sorted(get_by_path(self._data, self._path)):
+        try:
+            collection = get_by_path(self._data, self._path)
+        except KeyError:
+            return
+        for key in sorted(collection):
             doc_snapshot = self.document(key).get()
-            yield doc_snapshot
+            if doc_snapshot.exists:
+                yield doc_snapshot
 
 
 # Backward compatibility alias
