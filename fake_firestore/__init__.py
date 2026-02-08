@@ -18,6 +18,15 @@ except ImportError:  # pragma: no cover
     )
 
 from fake_firestore._helpers import Timestamp
+from fake_firestore.async_client import AsyncFakeFirestoreClient
+from fake_firestore.async_collection import AsyncFakeCollectionReference
+from fake_firestore.async_document import AsyncFakeDocumentReference
+from fake_firestore.async_query import AsyncFakeCollectionGroup, AsyncFakeQuery
+from fake_firestore.async_transaction import (
+    AsyncFakeTransaction,
+    AsyncFakeWriteBatch,
+    async_transactional,
+)
 from fake_firestore.client import FakeFirestoreClient, MockFirestore
 from fake_firestore.collection import CollectionReference, FakeCollectionReference
 from fake_firestore.document import (
@@ -50,6 +59,15 @@ __all__ = [
     "FakeQuery",
     "FakeTransaction",
     "FakeWriteBatch",
+    # Async classes
+    "AsyncFakeFirestoreClient",
+    "AsyncFakeCollectionReference",
+    "AsyncFakeDocumentReference",
+    "AsyncFakeQuery",
+    "AsyncFakeCollectionGroup",
+    "AsyncFakeTransaction",
+    "AsyncFakeWriteBatch",
+    "async_transactional",
     # Backward compatibility aliases
     "MockFirestore",
     "CollectionReference",

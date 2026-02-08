@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, and this project adheres to Semantic
 Versioning.
 
+## [0.11.0] - 2026-02-08
+### Added
+- Async support: `AsyncFakeFirestoreClient`, `AsyncFakeDocumentReference`,
+  `AsyncFakeCollectionReference`, `AsyncFakeQuery`, `AsyncFakeCollectionGroup`,
+  `AsyncFakeTransaction`, `AsyncFakeWriteBatch`, and `async_transactional`
+  decorator for testing code that uses `google.cloud.firestore_v1.async_*`
+  classes.
+
 ## [0.10.1] - 2026-02-08
 ### Fixed
 - `DocumentReference.get()` now supports optional `field_paths`, `retry`, and
