@@ -3,7 +3,7 @@ from __future__ import annotations
 import operator
 from copy import deepcopy
 from functools import reduce
-from typing import TYPE_CHECKING, Any, Callable, Dict, List
+from typing import TYPE_CHECKING, Any, Callable, Dict, Iterable, List, Optional
 
 from fake_firestore import AlreadyExists, NotFound
 from fake_firestore._helpers import (
@@ -83,29 +83,21 @@ class FakeDocumentReference:
     def id(self) -> str:
         return self._path[-1]
 
-    def get(self, transaction: Any = None) -> FakeDocumentSnapshot:
-        """Retrieve the document snapshot.
-
-        Args:
-            transaction: Accepted for API compatibility with
-                ``google.cloud.firestore_v1.DocumentReference.get()``.
-                In the real Firestore client the transaction parameter ensures
-                the read is performed within the given transaction's scope.
-                In this fake implementation all data lives in memory and
-                transaction isolation is not emulated, so the argument is
-                accepted but ignored.
-
-        Returns:
-            A snapshot of the document. If the document does not exist,
-            the snapshot's ``exists`` property will be ``False`` and
-            ``to_dict()`` will return ``None``.
-        """
+    def get(
+        self,
+        field_paths: Optional[Iterable[str]] = None,
+        transaction: Any = None,
+        retry: Any = None,
+        timeout: Optional[float] = None,
+    ) -> FakeDocumentSnapshot:
         if tuple(self._path) not in self._written_docs:
             return FakeDocumentSnapshot(self, None)
         try:
             data = get_by_path(self._data, self._path)
         except KeyError:
-            data = None
+            data = {}
+        if field_paths is not None:
+            data = {k: v for k, v in data.items() if k in field_paths}
         return FakeDocumentSnapshot(self, data)
 
     def create(self, data: Dict[str, Any]) -> None:

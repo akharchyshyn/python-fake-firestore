@@ -184,6 +184,52 @@ def test_contract_document_collections_empty(fs: FirestoreDB, collection_name: s
     assert subcollections == []
 
 
+def test_contract_get_with_field_paths(fs: FirestoreDB, collection_name: str) -> None:
+    """get(field_paths=...) should return a snapshot with only the specified fields."""
+    doc_ref = fs.collection(collection_name).document("full")
+    doc_ref.set({"name": "Alice", "age": 30, "city": "NYC"})
+
+    snapshot = doc_ref.get(field_paths=["name", "city"])
+
+    assert snapshot.exists is True
+    data = snapshot.to_dict()
+    assert data == {"name": "Alice", "city": "NYC"}
+
+
+def test_contract_get_with_field_paths_missing_doc(fs: FirestoreDB, collection_name: str) -> None:
+    """get(field_paths=...) on a missing doc should return exists=False."""
+    doc_ref = fs.collection(collection_name).document("missing")
+
+    snapshot = doc_ref.get(field_paths=["name"])
+
+    assert snapshot.exists is False
+    assert snapshot.to_dict() is None
+
+
+def test_contract_get_with_empty_field_paths(fs: FirestoreDB, collection_name: str) -> None:
+    """get(field_paths=[]) should return an empty dict for an existing document."""
+    doc_ref = fs.collection(collection_name).document("full")
+    doc_ref.set({"name": "Alice", "age": 30})
+
+    snapshot = doc_ref.get(field_paths=[])
+
+    assert snapshot.exists is True
+    assert snapshot.to_dict() == {}
+
+
+def test_contract_get_accepts_transaction_and_timeout(
+    fs: FirestoreDB, collection_name: str
+) -> None:
+    """get() should accept transaction and timeout keyword arguments without error."""
+    doc_ref = fs.collection(collection_name).document("doc")
+    doc_ref.set({"x": 1})
+
+    snapshot = doc_ref.get(timeout=10.0)
+
+    assert snapshot.exists is True
+    assert snapshot.to_dict() == {"x": 1}
+
+
 def test_contract_collection_id(fs: FirestoreDB, collection_name: str) -> None:
     """CollectionReference.id should return the collection name."""
     coll = fs.collection(collection_name)
