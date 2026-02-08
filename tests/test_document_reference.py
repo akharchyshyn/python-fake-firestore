@@ -220,6 +220,13 @@ class TestDocumentReference(TestCase):
         doc = fs.collection("foo").document("first").get().to_dict()
         self.assertEqual(doc["arr"], [1, 2, 3, 4])
 
+    def test_document_update_transformerArrayUnionDuplicates(self):
+        fs = MockFirestore()
+        fs.collection("foo").document("first").set({"arr": [1, 3]})
+        fs.collection("foo").document("first").update({"arr": firestore.ArrayUnion([2, 3, 4])})
+        doc = fs.collection("foo").document("first").get().to_dict()
+        self.assertEqual(doc["arr"], [1, 3, 2, 4])
+
     def test_document_update_transformerArrayUnionNested(self):
         fs = MockFirestore()
         fs.collection("foo").document("first").set(
