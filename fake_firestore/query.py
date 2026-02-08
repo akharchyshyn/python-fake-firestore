@@ -48,7 +48,9 @@ class FakeQuery:
             for field_filter in field_filters:
                 self._add_field_filter(*field_filter)
 
-    def stream(self, transaction: Any = None) -> Iterator[FakeDocumentSnapshot]:
+    def stream(
+        self, transaction: Any = None, timeout: Optional[float] = None
+    ) -> Iterator[FakeDocumentSnapshot]:
         doc_snapshots: Iterable[FakeDocumentSnapshot] = self.parent.stream()
 
         for field, compare, value in self._field_filters:
@@ -88,7 +90,7 @@ class FakeQuery:
 
         return iter(doc_snapshots)
 
-    def get(self) -> List[FakeDocumentSnapshot]:
+    def get(self, timeout: Optional[float] = None) -> List[FakeDocumentSnapshot]:
         return list(self.stream())
 
     def select(self, field_paths: Sequence[str]) -> FakeQuery:
@@ -249,7 +251,9 @@ class FakeCollectionGroup(FakeQuery):
         for collection in self._collections:
             yield from collection.stream()
 
-    def stream(self, transaction: Any = None) -> Iterator[FakeDocumentSnapshot]:
+    def stream(
+        self, transaction: Any = None, timeout: Optional[float] = None
+    ) -> Iterator[FakeDocumentSnapshot]:
         doc_snapshots: Iterable[FakeDocumentSnapshot] = list(self._get_all_snapshots())
 
         for field, compare, value in self._field_filters:

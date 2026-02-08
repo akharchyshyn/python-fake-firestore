@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, and this project adheres to Semantic
 Versioning.
 
+## [0.12.1] - 2026-02-08
+### Added
+- Accept `timeout` parameter on all methods that support it in the real
+  Firestore SDK (`set`, `update`, `delete`, `create`, `get`, `stream`, `add`,
+  `list_documents`, `collections`, `get_all`, `commit`). The parameter is
+  ignored (in-memory, no network) but ensures API compatibility.
+
 ## [0.12.0] - 2026-02-08
 ### Added
 - `DocumentReference.path` property returning the slash-separated document path.

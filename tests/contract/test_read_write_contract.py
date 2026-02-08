@@ -19,8 +19,8 @@ def test_contract_set_then_get_returns_same_data(fs: FirestoreDB, collection_nam
     doc_ref = fs.collection(collection_name).document("alice")
     payload = {"name": "Alice", "age": 30}
 
-    doc_ref.set(payload)
-    snapshot = doc_ref.get()
+    doc_ref.set(payload, timeout=5.0)
+    snapshot = doc_ref.get(timeout=5.0)
 
     assert snapshot.to_dict() == payload
 
@@ -31,14 +31,14 @@ def test_contract_update_missing_doc_raises_not_found(
     doc_ref = fs.collection(collection_name).document("missing")
 
     with pytest.raises(NotFound):
-        doc_ref.update({"active": True})
+        doc_ref.update({"active": True}, timeout=5.0)
 
 
 def test_contract_create_new_doc_succeeds(fs: FirestoreDB, collection_name: str) -> None:
     doc_ref = fs.collection(collection_name).document("new_doc")
     payload = {"name": "Bob", "age": 25}
 
-    doc_ref.create(payload)
+    doc_ref.create(payload, timeout=5.0)
     snapshot = doc_ref.get()
 
     assert snapshot.exists is True
@@ -88,7 +88,7 @@ def test_contract_stream_only_returns_existing_docs(fs: FirestoreDB, collection_
     fs.collection(collection_name).document("real").set({"x": 1})
     # Just get a reference and read a missing doc — should not pollute stream
     fs.collection(collection_name).document("ghost").get()
-    docs = list(fs.collection(collection_name).stream())
+    docs = list(fs.collection(collection_name).stream(timeout=5.0))
     assert len(docs) == 1
     assert docs[0].id == "real"
 
@@ -114,7 +114,7 @@ def test_contract_collection_get_returns_list(fs: FirestoreDB, collection_name: 
     fs.collection(collection_name).document("a").set({"x": 1})
     fs.collection(collection_name).document("b").set({"x": 2})
 
-    result = fs.collection(collection_name).get()
+    result = fs.collection(collection_name).get(timeout=5.0)
     assert isinstance(result, list)
     assert len(result) == 2
 

@@ -9,7 +9,7 @@ class TestMockFirestore(TestCase):
         fs.collection("foo").document("first").set({"id": 1})
         fs.collection("foo").document("second").set({"id": 2})
         doc = fs.collection("foo").document("first")
-        results = list(fs.get_all([doc]))
+        results = list(fs.get_all([doc], timeout=5.0))
         returned_doc_snapshot = results[0].to_dict()
         expected_doc_snapshot = doc.get().to_dict()
         self.assertEqual(returned_doc_snapshot, expected_doc_snapshot)
@@ -19,7 +19,7 @@ class TestMockFirestore(TestCase):
         fs.collection("foo").document("first").set({"id": 1})
         fs.collection("foo").document("second").set({"id": 2})
         fs.collection("bar")  # create empty collection
-        collections = fs.collections()
+        collections = fs.collections(timeout=5.0)
 
         self.assertEqual(len(collections), 2)
         collection_names = {c._path[0] for c in collections}

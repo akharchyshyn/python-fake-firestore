@@ -8,16 +8,16 @@ from fake_firestore import AlreadyExists, MockFirestore, NotFound
 class TestDocumentReference(TestCase):
     def test_get_document_by_path(self):
         fs = MockFirestore()
-        fs.collection("foo").document("first").set({"id": 1})
-        doc = fs.document("foo/first").get()
+        fs.collection("foo").document("first").set({"id": 1}, timeout=5.0)
+        doc = fs.document("foo/first").get(timeout=5.0)
         self.assertEqual({"id": 1}, doc.to_dict())
         self.assertEqual("first", doc.id)
 
     def test_set_document_by_path(self):
         fs = MockFirestore()
         doc_content = {"id": "bar"}
-        fs.document("foo/doc1/bar/doc2").set(doc_content)
-        doc = fs.document("foo/doc1/bar/doc2").get().to_dict()
+        fs.document("foo/doc1/bar/doc2").set(doc_content, timeout=5.0)
+        doc = fs.document("foo/doc1/bar/doc2").get(timeout=5.0).to_dict()
         self.assertEqual(doc_content, doc)
 
     def test_document_get_returnsDocument(self):
@@ -148,7 +148,7 @@ class TestDocumentReference(TestCase):
     def test_document_update_addNewValue(self):
         fs = MockFirestore()
         fs.collection("foo").document("first").set({"id": 1})
-        fs.collection("foo").document("first").update({"updated": True})
+        fs.collection("foo").document("first").update({"updated": True}, timeout=5.0)
         doc = fs.collection("foo").document("first").get().to_dict()
         self.assertEqual({"id": 1, "updated": True}, doc)
 
@@ -240,7 +240,7 @@ class TestDocumentReference(TestCase):
     def test_document_delete_documentDoesNotExistAfterDelete(self):
         fs = MockFirestore()
         fs.collection("foo").document("first").set({"id": 1})
-        fs.collection("foo").document("first").delete()
+        fs.collection("foo").document("first").delete(timeout=5.0)
         doc = fs.collection("foo").document("first").get()
         self.assertEqual(False, doc.exists)
 
@@ -254,7 +254,7 @@ class TestDocumentReference(TestCase):
     def test_document_create_createsNewDocument(self):
         fs = MockFirestore()
         doc_content = {"id": "bar"}
-        fs.collection("foo").document("bar").create(doc_content)
+        fs.collection("foo").document("bar").create(doc_content, timeout=5.0)
         doc = fs.collection("foo").document("bar").get().to_dict()
         self.assertEqual(doc_content, doc)
 

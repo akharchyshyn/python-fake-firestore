@@ -10,7 +10,7 @@ class TestCollectionReference(TestCase):
         fs = MockFirestore()
         fs.collection("foo").document("first").set({"id": 1})
         fs.collection("foo").document("second").set({"id": 2})
-        docs = list(fs.collection("foo").stream())
+        docs = list(fs.collection("foo").stream(timeout=5.0))
 
         self.assertEqual({"id": 1}, docs[0].to_dict())
         self.assertEqual({"id": 2}, docs[1].to_dict())
@@ -417,7 +417,7 @@ class TestCollectionReference(TestCase):
         fs.collection("foo").document("first").set({"order": 2})
         fs.collection("foo").document("second").set({"order": 1})
         fs.collection("foo").document("third").set({"order": 3})
-        doc_refs = list(fs.collection("foo").list_documents())
+        doc_refs = list(fs.collection("foo").list_documents(timeout=5.0))
         self.assertEqual(3, len(doc_refs))
         for doc_ref in doc_refs:
             self.assertIsInstance(doc_ref, DocumentReference)
@@ -455,7 +455,7 @@ class TestCollectionReference(TestCase):
         fs = MockFirestore()
         doc_id = "bar"
         doc_content = {"id": doc_id, "xy": "z"}
-        timestamp, doc_ref = fs.collection("foo").add(doc_content)
+        timestamp, doc_ref = fs.collection("foo").add(doc_content, timeout=5.0)
         self.assertEqual(doc_content, doc_ref.get().to_dict())
 
         doc = fs.collection("foo").document(doc_id).get().to_dict()
