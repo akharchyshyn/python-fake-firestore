@@ -91,6 +91,10 @@ class FakeDocumentReference:
     def id(self) -> str:
         return self._path[-1]
 
+    @property
+    def path(self) -> str:
+        return "/".join(self._path)
+
     def get(
         self,
         field_paths: Optional[Iterable[str]] = None,

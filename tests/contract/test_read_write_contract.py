@@ -270,3 +270,15 @@ def test_contract_where_by_document_reference(fs: FirestoreDB, collection_name: 
 
     assert len(docs) == 1
     assert docs[0].id == "a"
+
+
+def test_contract_document_reference_path(fs: FirestoreDB, collection_name: str) -> None:
+    """DocumentReference.path should return the slash-separated path."""
+    doc_ref = fs.collection(collection_name).document("my_doc")
+    assert doc_ref.path == f"{collection_name}/my_doc"
+
+
+def test_contract_document_reference_nested_path(fs: FirestoreDB, collection_name: str) -> None:
+    """DocumentReference.path should work for nested documents."""
+    doc_ref = fs.collection(collection_name).document("parent").collection("sub").document("child")
+    assert doc_ref.path == f"{collection_name}/parent/sub/child"
