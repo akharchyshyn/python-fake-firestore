@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, and this project adheres to Semantic
 Versioning.
 
+## [0.11.2] - 2026-02-08
+### Fixed
+- Add `__eq__` and `__hash__` to `DocumentReference` so that references with
+  the same path compare equal. Fixes querying by reference fields.
+  Closes mdowds/python-mock-firestore#68.
+
 ## [0.11.1] - 2026-02-08
 ### Fixed
 - Remove incorrect deprecation warnings from `Collection.get()` and

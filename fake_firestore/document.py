@@ -79,6 +79,14 @@ class FakeDocumentReference:
         )
         self._collection_factory = _collection_factory
 
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, FakeDocumentReference):
+            return NotImplemented
+        return self._path == other._path
+
+    def __hash__(self) -> int:
+        return hash(tuple(self._path))
+
     @property
     def id(self) -> str:
         return self._path[-1]

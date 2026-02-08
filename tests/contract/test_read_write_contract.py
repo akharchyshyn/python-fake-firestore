@@ -238,3 +238,35 @@ def test_contract_collection_id(fs: FirestoreDB, collection_name: str) -> None:
     doc_ref = coll.document("doc")
     subcoll = doc_ref.collection("sub")
     assert subcoll.id == "sub"
+
+
+def test_contract_document_reference_equality(fs: FirestoreDB, collection_name: str) -> None:
+    """Two DocumentReferences pointing to the same path should be equal."""
+    ref1 = fs.collection(collection_name).document("same_doc")
+    ref2 = fs.collection(collection_name).document("same_doc")
+
+    assert ref1 == ref2
+    assert hash(ref1) == hash(ref2)
+
+
+def test_contract_document_reference_inequality(fs: FirestoreDB, collection_name: str) -> None:
+    """Two DocumentReferences pointing to different paths should not be equal."""
+    ref1 = fs.collection(collection_name).document("doc_a")
+    ref2 = fs.collection(collection_name).document("doc_b")
+
+    assert ref1 != ref2
+
+
+def test_contract_where_by_document_reference(fs: FirestoreDB, collection_name: str) -> None:
+    """Querying by a reference field should match documents with the same reference path."""
+    target_ref = fs.collection(collection_name).document("target")
+    target_ref.set({"name": "target"})
+
+    fs.collection(collection_name).document("a").set({"ref": target_ref})
+    fs.collection(collection_name).document("b").set({"ref": "not_a_ref"})
+
+    query_ref = fs.collection(collection_name).document("target")
+    docs = list(fs.collection(collection_name).where("ref", "==", query_ref).stream())
+
+    assert len(docs) == 1
+    assert docs[0].id == "a"
