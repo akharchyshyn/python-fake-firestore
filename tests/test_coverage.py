@@ -1,6 +1,5 @@
 """Tests for uncovered code paths."""
 
-import warnings
 from unittest import TestCase
 
 from fake_firestore import MockFirestore, Transaction
@@ -47,36 +46,8 @@ class TestClientEdgeCases(TestCase):
         self.assertTrue(tx._read_only)
 
 
-class TestCollectionDeprecated(TestCase):
-    """Test deprecated Collection methods."""
-
-    def test_collection_get_deprecated(self):
-        """Test that Collection.get() emits deprecation warning."""
-        fs = MockFirestore()
-        fs.collection("foo").document("first").set({"id": 1})
-
-        with warnings.catch_warnings(record=True) as w:
-            warnings.simplefilter("always")
-            list(fs.collection("foo").get())
-            self.assertEqual(len(w), 1)
-            self.assertTrue(issubclass(w[0].category, DeprecationWarning))
-            self.assertIn("deprecated", str(w[0].message))
-
-
 class TestQueryEdgeCases(TestCase):
     """Test edge cases in Query."""
-
-    def test_query_get_deprecated(self):
-        """Test that Query.get() emits deprecation warning."""
-        fs = MockFirestore()
-        fs.collection("foo").document("first").set({"id": 1})
-
-        with warnings.catch_warnings(record=True) as w:
-            warnings.simplefilter("always")
-            list(fs.collection("foo").where("id", "==", 1).get())
-            self.assertEqual(len(w), 1)
-            self.assertTrue(issubclass(w[0].category, DeprecationWarning))
-            self.assertIn("deprecated", str(w[0].message))
 
     def test_query_unknown_operator(self):
         """Test that unknown operator raises ValueError."""
