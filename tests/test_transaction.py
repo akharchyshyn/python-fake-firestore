@@ -16,7 +16,7 @@ class TestTransaction(TestCase):
                 self.fs.collection("foo").document("first"),
                 self.fs.collection("foo").document("second"),
             ]
-            results = list(transaction.get_all(docs))
+            results = list(transaction.get_all(docs, timeout=5.0))
             returned_docs_snapshots = [result.to_dict() for result in results]
             expected_doc_snapshots = [doc.get().to_dict() for doc in docs]
             for expected_snapshot in expected_doc_snapshots:
@@ -26,7 +26,7 @@ class TestTransaction(TestCase):
         with Transaction(self.fs) as transaction:
             transaction._begin()
             doc = self.fs.collection("foo").document("first")
-            returned_doc = next(transaction.get(doc))
+            returned_doc = next(transaction.get(doc, timeout=5.0))
             self.assertEqual(doc.get().to_dict(), returned_doc.to_dict())
 
     def test_transaction_getQuery(self):
@@ -86,7 +86,7 @@ class TestWriteBatch(TestCase):
         ]
         for doc_ref, content in zip(doc_refs, doc_content):
             batch.set(doc_ref, content)
-        results = batch.commit()
+        results = batch.commit(timeout=5.0)
         self.assertEqual(len(results), 2)
         for doc_ref, content in zip(doc_refs, doc_content):
             self.assertEqual(doc_ref.get().to_dict(), content)

@@ -112,7 +112,7 @@ class FakeDocumentReference:
             data = {k: v for k, v in data.items() if k in field_paths}
         return FakeDocumentSnapshot(self, data)
 
-    def create(self, data: Dict[str, Any]) -> None:
+    def create(self, data: Dict[str, Any], timeout: Optional[float] = None) -> None:
         """Create a new document with the given data.
 
         Raises AlreadyExists if the document already exists.
@@ -122,11 +122,13 @@ class FakeDocumentReference:
         set_by_path(self._data, self._path, deepcopy(data))
         self._written_docs.add(tuple(self._path))
 
-    def delete(self) -> None:
+    def delete(self, timeout: Optional[float] = None) -> None:
         delete_by_path(self._data, self._path)
         self._written_docs.discard(tuple(self._path))
 
-    def set(self, data: Dict[str, Any], merge: bool = False) -> None:
+    def set(
+        self, data: Dict[str, Any], merge: bool = False, timeout: Optional[float] = None
+    ) -> None:
         if merge:
             try:
                 self.update(deepcopy(data))
@@ -139,7 +141,7 @@ class FakeDocumentReference:
             set_by_path(self._data, self._path, document)
             self._written_docs.add(tuple(self._path))
 
-    def update(self, data: Dict[str, Any]) -> None:
+    def update(self, data: Dict[str, Any], timeout: Optional[float] = None) -> None:
         if tuple(self._path) not in self._written_docs:
             raise NotFound("No document to update: {}".format(self._path))  # type: ignore[no-untyped-call]
         document = get_by_path(self._data, self._path)
@@ -153,7 +155,7 @@ class FakeDocumentReference:
             self._data, new_path, parent=self, written_docs=self._written_docs
         )
 
-    def collections(self) -> List[FakeCollectionReference]:
+    def collections(self, timeout: Optional[float] = None) -> List[FakeCollectionReference]:
         assert self._collection_factory is not None
         try:
             node = get_by_path(self._data, self._path)

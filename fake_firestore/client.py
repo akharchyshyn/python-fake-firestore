@@ -56,7 +56,7 @@ class FakeFirestoreClient:
                 self._data[name] = {}
             return FakeCollectionReference(self._data, [name], written_docs=self._written_docs)
 
-    def collections(self) -> Sequence[FakeCollectionReference]:
+    def collections(self, timeout: Optional[float] = None) -> Sequence[FakeCollectionReference]:
         return [
             FakeCollectionReference(self._data, [collection_name], written_docs=self._written_docs)
             for collection_name in self._data
@@ -111,6 +111,7 @@ class FakeFirestoreClient:
         references: Iterable[FakeDocumentReference],
         field_paths: Optional[Any] = None,
         transaction: Optional[Any] = None,
+        timeout: Optional[float] = None,
     ) -> Iterator[FakeDocumentSnapshot]:
         for doc_ref in set(references):
             yield doc_ref.get()

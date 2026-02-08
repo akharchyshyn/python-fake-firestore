@@ -44,13 +44,14 @@ class FakeCollectionReference:
             _collection_factory=FakeCollectionReference,
         )
 
-    def get(self) -> List[FakeDocumentSnapshot]:
+    def get(self, timeout: Optional[float] = None) -> List[FakeDocumentSnapshot]:
         return list(self.stream())
 
     def add(
         self,
         document_data: Dict[str, Any],
         document_id: Optional[str] = None,
+        timeout: Optional[float] = None,
     ) -> Tuple[Timestamp, FakeDocumentReference]:
         if document_id is None:
             document_id = document_data.get("id", generate_random_string())
@@ -127,7 +128,9 @@ class FakeCollectionReference:
         query = FakeQuery(self, end_at=(document_fields_or_snapshot, False))
         return query
 
-    def list_documents(self, page_size: Optional[int] = None) -> Sequence[FakeDocumentReference]:
+    def list_documents(
+        self, page_size: Optional[int] = None, timeout: Optional[float] = None
+    ) -> Sequence[FakeDocumentReference]:
         docs: List[FakeDocumentReference] = []
         try:
             collection = get_by_path(self._data, self._path)
@@ -137,7 +140,9 @@ class FakeCollectionReference:
             docs.append(self.document(key))
         return docs
 
-    def stream(self, transaction: Any = None) -> Iterator[FakeDocumentSnapshot]:
+    def stream(
+        self, transaction: Any = None, timeout: Optional[float] = None
+    ) -> Iterator[FakeDocumentSnapshot]:
         try:
             collection = get_by_path(self._data, self._path)
         except KeyError:

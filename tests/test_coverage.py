@@ -1,9 +1,10 @@
 """Tests for uncovered code paths."""
 
+import inspect
 from unittest import TestCase
 
 from fake_firestore import MockFirestore, Transaction
-from fake_firestore.transaction import WriteResult
+from fake_firestore.transaction import FakeWriteBatch, WriteResult
 
 
 class TestClientEdgeCases(TestCase):
@@ -210,3 +211,42 @@ class TestExceptions(TestCase):
         self.assertIsNone(ClientError.code)
         self.assertEqual(Conflict.code, 409)
         self.assertEqual(NotFound.code, 404)
+
+
+class TestTimeoutParameter(TestCase):
+    """Ensure all methods that accept timeout in the real SDK also accept it here."""
+
+    def test_timeout_parameter_exists(self):
+        from fake_firestore.client import FakeFirestoreClient
+        from fake_firestore.collection import FakeCollectionReference
+        from fake_firestore.document import FakeDocumentReference
+        from fake_firestore.query import FakeCollectionGroup, FakeQuery
+
+        methods = [
+            (FakeDocumentReference, "get"),
+            (FakeDocumentReference, "set"),
+            (FakeDocumentReference, "update"),
+            (FakeDocumentReference, "delete"),
+            (FakeDocumentReference, "create"),
+            (FakeDocumentReference, "collections"),
+            (FakeCollectionReference, "get"),
+            (FakeCollectionReference, "add"),
+            (FakeCollectionReference, "stream"),
+            (FakeCollectionReference, "list_documents"),
+            (FakeQuery, "stream"),
+            (FakeQuery, "get"),
+            (FakeCollectionGroup, "stream"),
+            (Transaction, "get"),
+            (Transaction, "get_all"),
+            (Transaction, "commit"),
+            (FakeWriteBatch, "commit"),
+            (FakeFirestoreClient, "collections"),
+            (FakeFirestoreClient, "get_all"),
+        ]
+        for cls, method_name in methods:
+            sig = inspect.signature(getattr(cls, method_name))
+            self.assertIn(
+                "timeout",
+                sig.parameters,
+                f"{cls.__name__}.{method_name}() missing 'timeout' parameter",
+            )

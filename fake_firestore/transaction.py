@@ -78,12 +78,12 @@ class FakeTransaction:
         return results
 
     def get_all(
-        self, references: Iterable[FakeDocumentReference]
+        self, references: Iterable[FakeDocumentReference], timeout: Optional[float] = None
     ) -> Iterable[FakeDocumentSnapshot]:
         return self._client.get_all(references)
 
     def get(
-        self, ref_or_query: Union[FakeDocumentReference, FakeQuery]
+        self, ref_or_query: Union[FakeDocumentReference, FakeQuery], timeout: Optional[float] = None
     ) -> Iterable[FakeDocumentSnapshot]:
         if isinstance(ref_or_query, FakeDocumentReference):
             return self._client.get_all([ref_or_query])
@@ -129,7 +129,7 @@ class FakeTransaction:
         write_op = reference.delete
         self._add_write_op(write_op)
 
-    def commit(self) -> List[WriteResult]:
+    def commit(self, timeout: Optional[float] = None) -> List[WriteResult]:
         return self._commit()
 
     def __enter__(self) -> FakeTransaction:
@@ -189,7 +189,7 @@ class FakeWriteBatch:
         self._write_ops.append(reference.delete)
         return self
 
-    def commit(self) -> List[WriteResult]:
+    def commit(self, timeout: Optional[float] = None) -> List[WriteResult]:
         results: List[WriteResult] = []
         for write_op in self._write_ops:
             write_op()
