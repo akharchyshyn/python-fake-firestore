@@ -29,6 +29,10 @@ class FakeCollectionReference:
             written_docs if written_docs is not None else set()
         )
 
+    @property
+    def id(self) -> str:
+        return self._path[-1]
+
     def document(self, document_id: Optional[str] = None) -> FakeDocumentReference:
         if document_id is None:
             document_id = generate_random_string()

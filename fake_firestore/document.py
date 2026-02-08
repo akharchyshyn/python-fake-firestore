@@ -148,6 +148,28 @@ class FakeDocumentReference:
             self._data, new_path, parent=self, written_docs=self._written_docs
         )
 
+    def collections(self) -> List[FakeCollectionReference]:
+        from fake_firestore.collection import FakeCollectionReference
+
+        try:
+            node = get_by_path(self._data, self._path)
+        except (KeyError, TypeError):
+            return []
+        if not isinstance(node, dict):
+            return []
+        result = []
+        for key, value in node.items():
+            if isinstance(value, dict):
+                child_path = self._path + [key]
+                # Only include if any written doc exists under this path
+                if any(wp[: len(child_path)] == tuple(child_path) for wp in self._written_docs):
+                    result.append(
+                        FakeCollectionReference(
+                            self._data, child_path, parent=self, written_docs=self._written_docs
+                        )
+                    )
+        return result
+
 
 # Backward compatibility aliases
 DocumentSnapshot = FakeDocumentSnapshot

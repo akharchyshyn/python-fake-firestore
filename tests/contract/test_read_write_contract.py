@@ -160,3 +160,35 @@ def test_contract_increment_on_nonexistent_doc(fs: FirestoreDB, collection_name:
     data = snapshot.to_dict()
     assert data["count"] == 1
     assert data["nested"]["score"] == 5
+
+
+def test_contract_document_collections(fs: FirestoreDB, collection_name: str) -> None:
+    """collections() should return subcollections of a document."""
+    doc_ref = fs.collection(collection_name).document("parent")
+    doc_ref.collection("sub_a").document("child1").set({"x": 1})
+    doc_ref.collection("sub_b").document("child2").set({"x": 2})
+
+    subcollections = list(doc_ref.collections())
+    ids = {col.id for col in subcollections}
+
+    assert ids == {"sub_a", "sub_b"}
+
+
+def test_contract_document_collections_empty(fs: FirestoreDB, collection_name: str) -> None:
+    """collections() on a document with no subcollections should return empty."""
+    doc_ref = fs.collection(collection_name).document("leaf")
+    doc_ref.set({"name": "leaf"})
+
+    subcollections = list(doc_ref.collections())
+
+    assert subcollections == []
+
+
+def test_contract_collection_id(fs: FirestoreDB, collection_name: str) -> None:
+    """CollectionReference.id should return the collection name."""
+    coll = fs.collection(collection_name)
+    assert coll.id == collection_name
+
+    doc_ref = coll.document("doc")
+    subcoll = doc_ref.collection("sub")
+    assert subcoll.id == "sub"
