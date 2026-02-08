@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, and this project adheres to Semantic
 Versioning.
 
+## [0.9.0] - 2026-02-08
+### Added
+- `where()` now accepts `filter=FieldFilter(...)` keyword argument, matching
+  the modern Firestore API. Closes mdowds/python-mock-firestore#74.
+
 ## [0.8.3] - 2026-02-08
 ### Fixed
 - Transforms (`Increment`, `ArrayUnion`) on non-existent documents no longer

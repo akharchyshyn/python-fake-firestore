@@ -69,7 +69,18 @@ class FakeCollectionReference:
         query = FakeQuery(self, projection=field_paths)
         return query
 
-    def where(self, field: str, op: str, value: Any) -> FakeQuery:
+    def where(
+        self,
+        field: str = "",
+        op: str = "",
+        value: Any = None,
+        *,
+        filter: Any = None,
+    ) -> FakeQuery:
+        if filter is not None:
+            field = filter.field_path
+            op = filter.op_string
+            value = filter.value
         query = FakeQuery(self, field_filters=((field, op, value),))
         return query
 

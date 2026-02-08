@@ -1,3 +1,5 @@
+from google.cloud.firestore_v1.base_query import FieldFilter
+
 from tests.contract.conftest import FirestoreDB
 
 
@@ -168,3 +170,33 @@ def test_contract_select_with_where(fs: FirestoreDB, collection_name: str) -> No
         assert "name" in data
         assert "active" not in data
         assert "score" not in data
+
+
+def test_contract_where_with_field_filter(fs: FirestoreDB, collection_name: str) -> None:
+    """where() should accept a FieldFilter via the filter keyword argument."""
+    base = fs.collection(collection_name)
+    base.document("a").set({"name": "Alice", "active": True})
+    base.document("b").set({"name": "Bob", "active": False})
+    base.document("c").set({"name": "Carol", "active": True})
+
+    snapshots = list(base.where(filter=FieldFilter("active", "==", True)).stream())
+    names = {snap.to_dict()["name"] for snap in snapshots}
+
+    assert names == {"Alice", "Carol"}
+
+
+def test_contract_where_chained_field_filters(fs: FirestoreDB, collection_name: str) -> None:
+    """Chaining multiple where() calls with FieldFilter should apply all filters."""
+    base = fs.collection(collection_name)
+    base.document("a").set({"active": True, "score": 10})
+    base.document("b").set({"active": True, "score": 20})
+    base.document("c").set({"active": False, "score": 30})
+
+    snapshots = list(
+        base.where(filter=FieldFilter("active", "==", True))
+        .where(filter=FieldFilter("score", ">=", 15))
+        .stream()
+    )
+
+    assert len(snapshots) == 1
+    assert snapshots[0].to_dict()["score"] == 20
