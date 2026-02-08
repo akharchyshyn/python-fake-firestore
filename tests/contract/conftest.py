@@ -1,16 +1,22 @@
+from __future__ import annotations
+
 import os
 import uuid
+from typing import Union
 
 import pytest
+from google.cloud.firestore import Client as FirestoreClient
 
-from fake_firestore import MockFirestore
+from fake_firestore import FakeFirestoreClient
+
+FirestoreDB = Union[FakeFirestoreClient, FirestoreClient]
 
 
 @pytest.fixture
-def fs() -> MockFirestore:
+def fs() -> FirestoreDB:
     backend = os.getenv("FIRESTORE_BACKEND", "fake")
     if backend == "fake":
-        return MockFirestore()
+        return FakeFirestoreClient()
     if backend == "emulator":
         emulator_host = os.getenv("FIRESTORE_EMULATOR_HOST")
         project_id = os.getenv("GOOGLE_CLOUD_PROJECT")
