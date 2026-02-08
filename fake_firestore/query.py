@@ -116,7 +116,18 @@ class FakeQuery:
         compare = self._compare_func(op)
         self._field_filters.append((field, compare, value))
 
-    def where(self, field: str, op: str, value: Any) -> FakeQuery:
+    def where(
+        self,
+        field: str = "",
+        op: str = "",
+        value: Any = None,
+        *,
+        filter: Any = None,
+    ) -> FakeQuery:
+        if filter is not None:
+            field = filter.field_path
+            op = filter.op_string
+            value = filter.value
         self._add_field_filter(field, op, value)
         return self
 
@@ -288,7 +299,18 @@ class FakeCollectionGroup(FakeQuery):
         self._projection = list(field_paths)
         return self
 
-    def where(self, field: str, op: str, value: Any) -> FakeCollectionGroup:
+    def where(
+        self,
+        field: str = "",
+        op: str = "",
+        value: Any = None,
+        *,
+        filter: Any = None,
+    ) -> FakeCollectionGroup:
+        if filter is not None:
+            field = filter.field_path
+            op = filter.op_string
+            value = filter.value
         self._add_field_filter(field, op, value)
         return self
 

@@ -1,5 +1,7 @@
 from unittest import TestCase
 
+from google.cloud.firestore_v1.base_query import FieldFilter
+
 from fake_firestore import AlreadyExists, DocumentReference, DocumentSnapshot, MockFirestore
 
 
@@ -133,6 +135,30 @@ class TestCollectionReference(TestCase):
         self.assertEqual(len(docs), 2)
         self.assertEqual({"field": "a1"}, docs[0].to_dict())
         self.assertEqual({"field": "a3"}, docs[1].to_dict())
+
+    def test_collection_whereFieldFilter(self):
+        fs = MockFirestore()
+        fs.collection("foo").document("first").set({"field": "a1"})
+        fs.collection("foo").document("second").set({"field": "a2"})
+
+        docs = list(fs.collection("foo").where(filter=FieldFilter("field", "==", "a1")).stream())
+        self.assertEqual(len(docs), 1)
+        self.assertEqual(docs[0].to_dict(), {"field": "a1"})
+
+    def test_collection_whereChainedFieldFilters(self):
+        fs = MockFirestore()
+        fs.collection("foo").document("first").set({"active": True, "score": 10})
+        fs.collection("foo").document("second").set({"active": True, "score": 20})
+        fs.collection("foo").document("third").set({"active": False, "score": 30})
+
+        docs = list(
+            fs.collection("foo")
+            .where(filter=FieldFilter("active", "==", True))
+            .where(filter=FieldFilter("score", ">=", 15))
+            .stream()
+        )
+        self.assertEqual(len(docs), 1)
+        self.assertEqual(docs[0].to_dict()["score"], 20)
 
     def test_collection_whereArrayContains(self):
         fs = MockFirestore()
