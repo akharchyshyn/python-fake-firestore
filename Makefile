@@ -1,4 +1,4 @@
-.PHONY: help install test test-cov test-contract-fake test-contract-emulator lint format typecheck check all clean build publish bump-patch bump-minor bump-major
+.PHONY: help install test test-cov test-contract-fake test-contract-emulator lint format typecheck check all clean build publish bump-patch bump-minor bump-major benchmark
 
 PYTHON := poetry run python
 PYTEST := poetry run pytest
@@ -24,6 +24,7 @@ help:
 	@echo "  bump-patch           Bump patch version (0.0.x)"
 	@echo "  bump-minor           Bump minor version (0.x.0)"
 	@echo "  bump-major           Bump major version (x.0.0)"
+	@echo "  benchmark            Run performance benchmark"
 
 # Dependencies
 install:
@@ -57,6 +58,10 @@ check: lint typecheck
 
 # Run everything
 all: format typecheck test test-contract-fake
+
+# Benchmark
+benchmark:
+	$(PYTHON) scripts/benchmark.py
 
 # Cleanup
 clean:
