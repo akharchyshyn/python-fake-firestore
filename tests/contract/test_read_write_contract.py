@@ -1,4 +1,5 @@
 import pytest
+from google.cloud import firestore
 
 from fake_firestore import AlreadyExists, MockFirestore, NotFound
 
@@ -142,3 +143,14 @@ def test_contract_snapshot_get_with_subcollection_no_data(
 
     snapshot = doc_ref.get()
     assert snapshot.get("name") is None
+
+
+def test_contract_array_union_skips_duplicates(fs: MockFirestore, collection_name: str) -> None:
+    """ArrayUnion should only add elements not already present in the array."""
+    doc_ref = fs.collection(collection_name).document("arr_test")
+    doc_ref.set({"arr": [1, 3]})
+
+    doc_ref.update({"arr": firestore.ArrayUnion([2, 3, 4])})
+
+    snapshot = doc_ref.get()
+    assert snapshot.to_dict()["arr"] == [1, 3, 2, 4]

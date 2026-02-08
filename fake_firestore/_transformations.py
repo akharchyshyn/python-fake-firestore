@@ -57,7 +57,14 @@ def apply_transformations(document: Dict[str, Any], data: Dict[str, Any]) -> Non
             set_by_path(data, path, item + value, create_nested=True)
 
     _update_data(increments, 0)
-    _update_data(arr_unions, [])
+
+    for key, value in arr_unions.items():
+        path = key.split(".")
+        try:
+            item = get_by_path(document, path)
+        except (TypeError, KeyError):
+            item = []
+        set_by_path(data, path, item + [v for v in value if v not in item], create_nested=True)
 
     _apply_updates(document, data)
     _apply_deletes(document, deletes)
