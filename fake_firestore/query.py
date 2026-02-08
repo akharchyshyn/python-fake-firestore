@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import warnings
 from itertools import islice, tee
 from typing import (
     TYPE_CHECKING,
@@ -90,10 +89,6 @@ class FakeQuery:
         return iter(doc_snapshots)
 
     def get(self) -> List[FakeDocumentSnapshot]:
-        warnings.warn(
-            "Query.get is deprecated, please use Query.stream",
-            category=DeprecationWarning,
-        )
         return list(self.stream())
 
     def select(self, field_paths: Sequence[str]) -> FakeQuery:

@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, and this project adheres to Semantic
 Versioning.
 
+## [0.11.1] - 2026-02-08
+### Fixed
+- Remove incorrect deprecation warnings from `Collection.get()` and
+  `Query.get()`. These methods are not deprecated in the real Firestore SDK.
+
 ## [0.11.0] - 2026-02-08
 ### Added
 - Async support: `AsyncFakeFirestoreClient`, `AsyncFakeDocumentReference`,
