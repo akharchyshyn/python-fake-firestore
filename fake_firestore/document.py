@@ -3,7 +3,7 @@ from __future__ import annotations
 import operator
 from copy import deepcopy
 from functools import reduce
-from typing import TYPE_CHECKING, Any, Dict, List
+from typing import TYPE_CHECKING, Any, Callable, Dict, List
 
 from fake_firestore import AlreadyExists, NotFound
 from fake_firestore._helpers import (
@@ -69,6 +69,7 @@ class FakeDocumentReference:
         path: List[str],
         parent: FakeCollectionReference,
         written_docs: set[tuple[str, ...]] | None = None,
+        _collection_factory: Callable[..., FakeCollectionReference] | None = None,
     ) -> None:
         self._data = data
         self._path = path
@@ -76,6 +77,7 @@ class FakeDocumentReference:
         self._written_docs: set[tuple[str, ...]] = (
             written_docs if written_docs is not None else set()
         )
+        self._collection_factory = _collection_factory
 
     @property
     def id(self) -> str:
@@ -141,16 +143,14 @@ class FakeDocumentReference:
         apply_transformations(document, deepcopy(data))
 
     def collection(self, name: str) -> FakeCollectionReference:
-        from fake_firestore.collection import FakeCollectionReference
-
+        assert self._collection_factory is not None
         new_path = self._path + [name]
-        return FakeCollectionReference(
+        return self._collection_factory(
             self._data, new_path, parent=self, written_docs=self._written_docs
         )
 
     def collections(self) -> List[FakeCollectionReference]:
-        from fake_firestore.collection import FakeCollectionReference
-
+        assert self._collection_factory is not None
         try:
             node = get_by_path(self._data, self._path)
         except (KeyError, TypeError):
@@ -164,7 +164,7 @@ class FakeDocumentReference:
                 # Only include if any written doc exists under this path
                 if any(wp[: len(child_path)] == tuple(child_path) for wp in self._written_docs):
                     result.append(
-                        FakeCollectionReference(
+                        self._collection_factory(
                             self._data, child_path, parent=self, written_docs=self._written_docs
                         )
                     )
