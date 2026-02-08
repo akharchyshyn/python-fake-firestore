@@ -385,3 +385,33 @@ class TestDocumentReference(TestCase):
         )
         doc = fs.collection("foo").document("first").get().to_dict()
         self.assertEqual(doc["arr"], [1, 2, 3, 4])
+
+    def test_document_reference_equality(self):
+        fs = MockFirestore()
+        ref1 = fs.collection("foo").document("bar")
+        ref2 = fs.collection("foo").document("bar")
+        self.assertEqual(ref1, ref2)
+        self.assertEqual(hash(ref1), hash(ref2))
+
+    def test_document_reference_inequality(self):
+        fs = MockFirestore()
+        ref1 = fs.collection("foo").document("a")
+        ref2 = fs.collection("foo").document("b")
+        self.assertNotEqual(ref1, ref2)
+
+    def test_document_reference_not_equal_to_other_type(self):
+        fs = MockFirestore()
+        ref = fs.collection("foo").document("bar")
+        self.assertNotEqual(ref, "foo/bar")
+
+    def test_where_by_document_reference(self):
+        fs = MockFirestore()
+        target_ref = fs.collection("foo").document("target")
+        target_ref.set({"name": "target"})
+        fs.collection("foo").document("a").set({"ref": target_ref})
+        fs.collection("foo").document("b").set({"ref": "not_a_ref"})
+
+        query_ref = fs.collection("foo").document("target")
+        docs = list(fs.collection("foo").where("ref", "==", query_ref).stream())
+        self.assertEqual(len(docs), 1)
+        self.assertEqual(docs[0].id, "a")
