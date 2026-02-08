@@ -76,6 +76,40 @@ class TestDocumentReference(TestCase):
 
         self.assertIsNone(doc)
 
+    def test_document_get_with_field_paths(self):
+        fs = MockFirestore()
+        fs.collection("foo").document("doc").set({"name": "Alice", "age": 30, "city": "NYC"})
+        snapshot = fs.collection("foo").document("doc").get(field_paths=["name", "city"])
+        self.assertTrue(snapshot.exists)
+        self.assertEqual({"name": "Alice", "city": "NYC"}, snapshot.to_dict())
+
+    def test_document_get_with_field_paths_missing_doc(self):
+        fs = MockFirestore()
+        snapshot = fs.collection("foo").document("missing").get(field_paths=["name"])
+        self.assertFalse(snapshot.exists)
+        self.assertIsNone(snapshot.to_dict())
+
+    def test_document_get_with_empty_field_paths(self):
+        fs = MockFirestore()
+        fs.collection("foo").document("doc").set({"name": "Alice", "age": 30})
+        snapshot = fs.collection("foo").document("doc").get(field_paths=[])
+        self.assertTrue(snapshot.exists)
+        self.assertEqual({}, snapshot.to_dict())
+
+    def test_document_get_accepts_timeout(self):
+        fs = MockFirestore()
+        fs.collection("foo").document("doc").set({"x": 1})
+        snapshot = fs.collection("foo").document("doc").get(timeout=10.0)
+        self.assertTrue(snapshot.exists)
+        self.assertEqual({"x": 1}, snapshot.to_dict())
+
+    def test_document_get_accepts_retry(self):
+        fs = MockFirestore()
+        fs.collection("foo").document("doc").set({"x": 1})
+        snapshot = fs.collection("foo").document("doc").get(retry=None)
+        self.assertTrue(snapshot.exists)
+        self.assertEqual({"x": 1}, snapshot.to_dict())
+
     def test_document_set_setsContentOfDocument(self):
         fs = MockFirestore()
         doc_content = {"id": "bar"}
