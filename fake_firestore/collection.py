@@ -38,7 +38,11 @@ class FakeCollectionReference:
             document_id = generate_random_string()
         new_path = self._path + [document_id]
         return FakeDocumentReference(
-            self._data, new_path, parent=self, written_docs=self._written_docs
+            self._data,
+            new_path,
+            parent=self,
+            written_docs=self._written_docs,
+            _collection_factory=FakeCollectionReference,
         )
 
     def get(self) -> List[FakeDocumentSnapshot]:
@@ -63,7 +67,11 @@ class FakeCollectionReference:
         except KeyError:
             pass
         doc_ref = FakeDocumentReference(
-            self._data, new_path, parent=self, written_docs=self._written_docs
+            self._data,
+            new_path,
+            parent=self,
+            written_docs=self._written_docs,
+            _collection_factory=FakeCollectionReference,
         )
         doc_ref.set(document_data)
         timestamp = Timestamp.from_now()
