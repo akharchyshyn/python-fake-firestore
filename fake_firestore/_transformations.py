@@ -15,6 +15,12 @@ def apply_transformations(document: Dict[str, Any], data: Dict[str, Any]) -> Non
     arr_deletes: Dict[str, Any] = {}
     deletes: List[str] = []
 
+    def _remove_from_data(k: str) -> None:
+        try:
+            delete_by_path(data, k.split("."))
+        except (KeyError, TypeError):
+            data.pop(k, None)
+
     for key, value in list(get_document_iterator(data)):
         if not value.__class__.__module__.startswith("google.cloud.firestore"):
             # Unfortunately, we can't use `isinstance` here because that would require
@@ -32,15 +38,17 @@ def apply_transformations(document: Dict[str, Any], data: Dict[str, Any]) -> Non
         transformer = value.__class__.__name__
         if transformer == "Increment":
             increments[key] = value.value
+            _remove_from_data(key)
         elif transformer == "ArrayUnion":
             arr_unions[key] = value.values
+            _remove_from_data(key)
         elif transformer == "ArrayRemove":
             arr_deletes[key] = value.values
-            del data[key]
+            _remove_from_data(key)
         elif transformer == "Sentinel":
             if value.description == "Value used to delete a field in a document.":
                 deletes.append(key)
-                del data[key]
+                _remove_from_data(key)
 
         # All other transformations can be applied as needed.
         # See #29 for tracking.

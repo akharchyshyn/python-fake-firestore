@@ -175,6 +175,16 @@ class TestDocumentReference(TestCase):
         doc = fs.collection("foo").document("first").get().to_dict()
         self.assertEqual(doc, {"count": 1, "spicy": "tuna"})
 
+    def test_document_set_transformerIncrementOnNewDoc(self):
+        fs = MockFirestore()
+        fs.collection("foo").document("first").set(
+            {"count": firestore.Increment(1), "nested": {"score": firestore.Increment(5)}}
+        )
+
+        doc = fs.collection("foo").document("first").get().to_dict()
+        self.assertEqual(doc["count"], 1)
+        self.assertEqual(doc["nested"]["score"], 5)
+
     def test_document_delete_documentDoesNotExistAfterDelete(self):
         fs = MockFirestore()
         fs.collection("foo").document("first").set({"id": 1})

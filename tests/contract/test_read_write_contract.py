@@ -149,3 +149,14 @@ def test_contract_array_union_skips_duplicates(fs: FirestoreDB, collection_name:
 
     snapshot = doc_ref.get()
     assert snapshot.to_dict()["arr"] == [1, 3, 2, 4]
+
+
+def test_contract_increment_on_nonexistent_doc(fs: FirestoreDB, collection_name: str) -> None:
+    """Increment on a document that doesn't exist yet should store numeric values."""
+    doc_ref = fs.collection(collection_name).document("new_doc")
+    doc_ref.set({"count": firestore.Increment(1), "nested": {"score": firestore.Increment(5)}})
+
+    snapshot = doc_ref.get()
+    data = snapshot.to_dict()
+    assert data["count"] == 1
+    assert data["nested"]["score"] == 5
