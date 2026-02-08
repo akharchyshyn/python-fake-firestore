@@ -157,6 +157,27 @@ class TestCollectionReference(TestCase):
         self.assertEqual({"field": ["val4"]}, contains_any_docs[0].to_dict())
         self.assertEqual({"field": ["val3", "val2", "val1"]}, contains_any_docs[1].to_dict())
 
+    def test_collection_whereArrayContainsSkipsNone(self):
+        fs = MockFirestore()
+        fs.collection("foo").document("first").set({"field": ["val1", "val2"]})
+        fs.collection("foo").document("second").set({"field": None})
+        fs.collection("foo").document("third").set({"other": "no field"})
+
+        docs = list(fs.collection("foo").where("field", "array_contains", "val1").stream())
+        self.assertEqual(len(docs), 1)
+        self.assertEqual(docs[0].to_dict(), {"field": ["val1", "val2"]})
+
+    def test_collection_whereArrayContainsAnySkipsNone(self):
+        fs = MockFirestore()
+        fs.collection("foo").document("first").set({"field": ["val1"]})
+        fs.collection("foo").document("second").set({"field": None})
+        fs.collection("foo").document("third").set({"field": ["val3"]})
+
+        docs = list(
+            fs.collection("foo").where("field", "array_contains_any", ["val1", "val3"]).stream()
+        )
+        self.assertEqual(len(docs), 2)
+
     def test_collection_orderBy(self):
         fs = MockFirestore()
         fs.collection("foo").document("first").set({"order": 2})

@@ -1,8 +1,8 @@
-from fake_firestore import MockFirestore
+from tests.contract.conftest import FirestoreDB
 
 
 def test_contract_collection_group_returns_docs_from_multiple_parents(
-    fs: MockFirestore, collection_name: str
+    fs: FirestoreDB, collection_name: str
 ) -> None:
     parent_one = fs.collection("parents").document("one")
     parent_two = fs.collection("other_parents").document("two")
@@ -17,7 +17,7 @@ def test_contract_collection_group_returns_docs_from_multiple_parents(
 
 
 def test_contract_order_by_with_where_filters_and_sorts(
-    fs: MockFirestore, collection_name: str
+    fs: FirestoreDB, collection_name: str
 ) -> None:
     base = fs.collection(collection_name)
     base.document("a").set({"score": 2, "active": True})
@@ -30,7 +30,7 @@ def test_contract_order_by_with_where_filters_and_sorts(
     assert scores == [1, 2]
 
 
-def test_contract_order_by_descending(fs: MockFirestore, collection_name: str) -> None:
+def test_contract_order_by_descending(fs: FirestoreDB, collection_name: str) -> None:
     base = fs.collection(collection_name)
     base.document("a").set({"score": 2})
     base.document("b").set({"score": 1})
@@ -42,7 +42,7 @@ def test_contract_order_by_descending(fs: MockFirestore, collection_name: str) -
     assert scores == [3, 2, 1]
 
 
-def test_contract_limit(fs: MockFirestore, collection_name: str) -> None:
+def test_contract_limit(fs: FirestoreDB, collection_name: str) -> None:
     base = fs.collection(collection_name)
     base.document("a").set({"score": 2})
     base.document("b").set({"score": 1})
@@ -54,7 +54,7 @@ def test_contract_limit(fs: MockFirestore, collection_name: str) -> None:
     assert scores == [1, 2]
 
 
-def test_contract_start_at_end_at(fs: MockFirestore, collection_name: str) -> None:
+def test_contract_start_at_end_at(fs: FirestoreDB, collection_name: str) -> None:
     base = fs.collection(collection_name)
     base.document("a").set({"score": 1})
     base.document("b").set({"score": 2})
@@ -69,7 +69,7 @@ def test_contract_start_at_end_at(fs: MockFirestore, collection_name: str) -> No
     assert scores == [2, 3]
 
 
-def test_contract_array_contains(fs: MockFirestore, collection_name: str) -> None:
+def test_contract_array_contains(fs: FirestoreDB, collection_name: str) -> None:
     base = fs.collection(collection_name)
     base.document("a").set({"tags": ["red", "blue"]})
     base.document("b").set({"tags": ["green"]})
@@ -81,7 +81,7 @@ def test_contract_array_contains(fs: MockFirestore, collection_name: str) -> Non
     assert ids == {"a", "c"}
 
 
-def test_contract_query_get_returns_list(fs: MockFirestore, collection_name: str) -> None:
+def test_contract_query_get_returns_list(fs: FirestoreDB, collection_name: str) -> None:
     """query.get() should return a list, not a generator."""
     base = fs.collection(collection_name)
     base.document("a").set({"active": True})
@@ -93,8 +93,37 @@ def test_contract_query_get_returns_list(fs: MockFirestore, collection_name: str
     assert len(result) == 1
 
 
+def test_contract_array_contains_skips_none_fields(fs: FirestoreDB, collection_name: str) -> None:
+    """array_contains should skip documents where the field is None."""
+    base = fs.collection(collection_name)
+    base.document("a").set({"tags": ["red", "blue"]})
+    base.document("b").set({"tags": None})
+    base.document("c").set({"tags": ["blue"]})
+    base.document("d").set({"other": "no tags field"})
+
+    snapshots = list(base.where("tags", "array_contains", "blue").stream())
+    ids = {snapshot.id for snapshot in snapshots}
+
+    assert ids == {"a", "c"}
+
+
+def test_contract_array_contains_any_skips_none_fields(
+    fs: FirestoreDB, collection_name: str
+) -> None:
+    """array_contains_any should skip documents where the field is None."""
+    base = fs.collection(collection_name)
+    base.document("a").set({"tags": ["red", "blue"]})
+    base.document("b").set({"tags": None})
+    base.document("c").set({"tags": ["green"]})
+
+    snapshots = list(base.where("tags", "array_contains_any", ["red", "green"]).stream())
+    ids = {snapshot.id for snapshot in snapshots}
+
+    assert ids == {"a", "c"}
+
+
 def test_contract_select_returns_only_specified_fields(
-    fs: MockFirestore, collection_name: str
+    fs: FirestoreDB, collection_name: str
 ) -> None:
     """select() should return snapshots containing only the requested fields."""
     base = fs.collection(collection_name)
@@ -112,7 +141,7 @@ def test_contract_select_returns_only_specified_fields(
 
 
 def test_contract_select_empty_fields_returns_empty_dicts(
-    fs: MockFirestore, collection_name: str
+    fs: FirestoreDB, collection_name: str
 ) -> None:
     """select([]) should return snapshots with no fields (only verifies existence)."""
     base = fs.collection(collection_name)
@@ -124,7 +153,7 @@ def test_contract_select_empty_fields_returns_empty_dicts(
     assert snapshots[0].to_dict() == {}
 
 
-def test_contract_select_with_where(fs: MockFirestore, collection_name: str) -> None:
+def test_contract_select_with_where(fs: FirestoreDB, collection_name: str) -> None:
     """select() combined with where() should filter and project."""
     base = fs.collection(collection_name)
     base.document("a").set({"name": "Alice", "active": True, "score": 10})

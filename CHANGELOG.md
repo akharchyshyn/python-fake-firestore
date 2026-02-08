@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, and this project adheres to Semantic
 Versioning.
 
+## [0.8.2] - 2026-02-08
+### Fixed
+- `array_contains` and `array_contains_any` queries no longer throw `TypeError`
+  when the field is `None` or missing. Closes mdowds/python-mock-firestore#66.
+
 ## [0.8.1] - 2026-02-08
 ### Fixed
 - `ArrayUnion` now skips elements already present in the array, matching real
