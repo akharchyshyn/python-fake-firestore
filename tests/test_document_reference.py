@@ -386,6 +386,17 @@ class TestDocumentReference(TestCase):
         doc = fs.collection("foo").document("first").get().to_dict()
         self.assertEqual(doc["arr"], [1, 2, 3, 4])
 
+    def test_document_path_property(self):
+        fs = MockFirestore()
+        fs.collection("foo").document("first").set({"id": 1})
+        doc_ref = fs.collection("foo").document("first")
+        self.assertEqual("foo/first", doc_ref.path)
+
+    def test_document_path_nested(self):
+        fs = MockFirestore()
+        doc_ref = fs.collection("foo").document("first").collection("bar").document("second")
+        self.assertEqual("foo/first/bar/second", doc_ref.path)
+
     def test_document_reference_equality(self):
         fs = MockFirestore()
         ref1 = fs.collection("foo").document("bar")

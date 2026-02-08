@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, and this project adheres to Semantic
 Versioning.
 
+## [0.12.0] - 2026-02-08
+### Added
+- `DocumentReference.path` property returning the slash-separated document path.
+  Closes mdowds/python-mock-firestore#78.
+
 ## [0.11.2] - 2026-02-08
 ### Fixed
 - Add `__eq__` and `__hash__` to `DocumentReference` so that references with
