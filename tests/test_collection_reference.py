@@ -432,6 +432,14 @@ class TestCollectionReference(TestCase):
         for doc_snapshot in doc_snapshots:
             self.assertIsInstance(doc_snapshot, DocumentSnapshot)
 
+    def test_collection_id(self):
+        fs = MockFirestore()
+        coll = fs.collection("foo")
+        self.assertEqual(coll.id, "foo")
+
+        subcoll = fs.collection("foo").document("doc").collection("bar")
+        self.assertEqual(subcoll.id, "bar")
+
     def test_collection_parent(self):
         fs = MockFirestore()
         fs.collection("foo").document("first").set({"order": 2})

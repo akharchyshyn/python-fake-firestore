@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, and this project adheres to Semantic
 Versioning.
 
+## [0.10.0] - 2026-02-08
+### Added
+- `DocumentReference.collections()` method to list subcollections.
+  Closes mdowds/python-mock-firestore#85.
+- `CollectionReference.id` property.
+
 ## [0.9.0] - 2026-02-08
 ### Added
 - `where()` now accepts `filter=FieldFilter(...)` keyword argument, matching

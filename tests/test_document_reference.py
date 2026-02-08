@@ -185,6 +185,24 @@ class TestDocumentReference(TestCase):
         self.assertEqual(doc["count"], 1)
         self.assertEqual(doc["nested"]["score"], 5)
 
+    def test_document_collections(self):
+        fs = MockFirestore()
+        doc_ref = fs.collection("foo").document("parent")
+        doc_ref.collection("sub_a").document("child1").set({"x": 1})
+        doc_ref.collection("sub_b").document("child2").set({"x": 2})
+
+        subcollections = list(doc_ref.collections())
+        ids = {col.id for col in subcollections}
+        self.assertEqual(ids, {"sub_a", "sub_b"})
+
+    def test_document_collections_empty(self):
+        fs = MockFirestore()
+        doc_ref = fs.collection("foo").document("leaf")
+        doc_ref.set({"name": "leaf"})
+
+        subcollections = list(doc_ref.collections())
+        self.assertEqual(subcollections, [])
+
     def test_document_delete_documentDoesNotExistAfterDelete(self):
         fs = MockFirestore()
         fs.collection("foo").document("first").set({"id": 1})
