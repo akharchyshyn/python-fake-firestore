@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog, and this project adheres to Semantic
 Versioning.
 
+## [0.8.3] - 2026-02-08
+### Fixed
+- Transforms (`Increment`, `ArrayUnion`) on non-existent documents no longer
+  store raw transform objects instead of resolved values.
+  Closes mdowds/python-mock-firestore#71.
+
 ## [0.8.2] - 2026-02-08
 ### Fixed
 - `array_contains` and `array_contains_any` queries no longer throw `TypeError`

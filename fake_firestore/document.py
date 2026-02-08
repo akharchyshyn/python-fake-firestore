@@ -127,7 +127,10 @@ class FakeDocumentReference:
             except NotFound:
                 self.set(data)
         else:
-            set_by_path(self._data, self._path, deepcopy(data))
+            data = deepcopy(data)
+            document: Dict[str, Any] = {}
+            apply_transformations(document, data)
+            set_by_path(self._data, self._path, document)
             self._written_docs.add(tuple(self._path))
 
     def update(self, data: Dict[str, Any]) -> None:
