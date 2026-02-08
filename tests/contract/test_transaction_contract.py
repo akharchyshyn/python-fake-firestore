@@ -3,7 +3,7 @@ from typing import Any, Callable, Optional
 
 import pytest
 
-from fake_firestore import MockFirestore
+from tests.contract.conftest import FirestoreDB
 
 
 def _maybe_begin(transaction: Any) -> None:
@@ -13,7 +13,7 @@ def _maybe_begin(transaction: Any) -> None:
 
 
 def test_contract_transaction_set_update_delete_applies(
-    fs: MockFirestore, collection_name: str
+    fs: FirestoreDB, collection_name: str
 ) -> None:
     doc_set = fs.collection(collection_name).document("set_doc")
     doc_update = fs.collection(collection_name).document("update_doc")
@@ -35,7 +35,7 @@ def test_contract_transaction_set_update_delete_applies(
 
 
 def test_contract_transaction_exception_does_not_apply(
-    fs: MockFirestore, collection_name: str
+    fs: FirestoreDB, collection_name: str
 ) -> None:
     doc_ref = fs.collection(collection_name).document("boom")
 
@@ -59,7 +59,7 @@ def _get_transactional() -> Any:
         return transactional
 
 
-def test_contract_transactional_decorator_commits(fs: MockFirestore, collection_name: str) -> None:
+def test_contract_transactional_decorator_commits(fs: FirestoreDB, collection_name: str) -> None:
     _transactional = _get_transactional()
     doc_ref = fs.collection(collection_name).document("counter")
     doc_ref.set({"count": 0})
@@ -76,7 +76,7 @@ def test_contract_transactional_decorator_commits(fs: MockFirestore, collection_
 
 
 def test_contract_transactional_decorator_rolls_back_on_error(
-    fs: MockFirestore, collection_name: str
+    fs: FirestoreDB, collection_name: str
 ) -> None:
     _transactional = _get_transactional()
     doc_ref = fs.collection(collection_name).document("safe")
@@ -95,7 +95,7 @@ def test_contract_transactional_decorator_rolls_back_on_error(
 
 
 def test_contract_snapshot_get_does_not_accept_transaction(
-    fs: MockFirestore, collection_name: str
+    fs: FirestoreDB, collection_name: str
 ) -> None:
     """DocumentSnapshot.get() should only accept a field_path, not a transaction kwarg."""
     doc_ref = fs.collection(collection_name).document("doc")

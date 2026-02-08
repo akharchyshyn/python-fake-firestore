@@ -1,9 +1,10 @@
 import pytest
 
-from fake_firestore import MockFirestore, NotFound
+from fake_firestore import NotFound
+from tests.contract.conftest import FirestoreDB
 
 
-def test_contract_batch_set_update_delete_commit(fs: MockFirestore, collection_name: str) -> None:
+def test_contract_batch_set_update_delete_commit(fs: FirestoreDB, collection_name: str) -> None:
     first = fs.collection(collection_name).document("first")
     second = fs.collection(collection_name).document("second")
 
@@ -22,7 +23,7 @@ def test_contract_batch_set_update_delete_commit(fs: MockFirestore, collection_n
     assert second.get().to_dict() == {"id": 2, "active": True}
 
 
-def test_contract_batch_commit_no_ops(fs: MockFirestore, collection_name: str) -> None:
+def test_contract_batch_commit_no_ops(fs: FirestoreDB, collection_name: str) -> None:
     batch = fs.batch()
 
     results = batch.commit()
@@ -30,7 +31,7 @@ def test_contract_batch_commit_no_ops(fs: MockFirestore, collection_name: str) -
     assert results == []
 
 
-def test_contract_batch_context_manager_commits(fs: MockFirestore, collection_name: str) -> None:
+def test_contract_batch_context_manager_commits(fs: FirestoreDB, collection_name: str) -> None:
     doc_ref = fs.collection(collection_name).document("ctx")
 
     with fs.batch() as batch:
@@ -40,7 +41,7 @@ def test_contract_batch_context_manager_commits(fs: MockFirestore, collection_na
 
 
 def test_contract_batch_update_missing_raises_not_found(
-    fs: MockFirestore, collection_name: str
+    fs: FirestoreDB, collection_name: str
 ) -> None:
     doc_ref = fs.collection(collection_name).document("missing")
     batch = fs.batch()
