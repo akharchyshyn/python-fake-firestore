@@ -9,9 +9,15 @@ from fake_firestore.transaction import FakeTransaction, FakeWriteBatch
 
 
 class FakeFirestoreClient:
-    def __init__(self) -> None:
-        self._data: Dict[str, Any] = {}
-        self._written_docs: set[tuple[str, ...]] = set()
+    def __init__(
+        self,
+        data: Optional[Dict[str, Any]] = None,
+        written_docs: Optional[set[tuple[str, ...]]] = None,
+    ) -> None:
+        self._data: Dict[str, Any] = data if data is not None else {}
+        self._written_docs: set[tuple[str, ...]] = (
+            written_docs if written_docs is not None else set()
+        )
 
     def _ensure_path(
         self, path: List[str]
@@ -63,8 +69,8 @@ class FakeFirestoreClient:
         ]
 
     def reset(self) -> None:
-        self._data = {}
-        self._written_docs = set()
+        self._data.clear()
+        self._written_docs.clear()
 
     def _find_collections_by_name(
         self,

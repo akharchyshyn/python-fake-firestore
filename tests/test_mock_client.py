@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from fake_firestore import FakeFirestoreClient, MockFirestore
+from fake_firestore import AsyncFakeFirestoreClient, FakeFirestoreClient, MockFirestore
 
 
 class TestMockFirestore(TestCase):
@@ -94,3 +94,82 @@ class TestMockFirestore(TestCase):
         with self.assertRaises(ValueError) as context:
             fs.collection_group("invalid/id")
         self.assertIn("must not contain '/'", str(context.exception))
+
+
+class TestSharedData(TestCase):
+    """Sync clients can share the same underlying data store."""
+
+    def test_sync_write_visible_to_sync(self):
+        shared_data: dict = {}
+        shared_written_docs: set = set()
+        fs1 = MockFirestore(data=shared_data, written_docs=shared_written_docs)
+        fs2 = MockFirestore(data=shared_data, written_docs=shared_written_docs)
+
+        fs1.collection("users").document("alice").set({"name": "Alice"})
+
+        doc = fs2.collection("users").document("alice").get()
+        self.assertTrue(doc.exists)
+        self.assertEqual(doc.to_dict(), {"name": "Alice"})
+
+    def test_independent_clients_do_not_share_data_by_default(self):
+        fs1 = MockFirestore()
+        fs2 = MockFirestore()
+
+        fs1.collection("users").document("eve").set({"name": "Eve"})
+
+        doc = fs2.collection("users").document("eve").get()
+        self.assertFalse(doc.exists)
+
+
+async def test_sync_write_visible_to_async():
+    shared_data: dict = {}
+    shared_written_docs: set = set()
+    sync_db = MockFirestore(data=shared_data, written_docs=shared_written_docs)
+    async_db = AsyncFakeFirestoreClient(data=shared_data, written_docs=shared_written_docs)
+
+    sync_db.collection("users").document("bob").set({"name": "Bob"})
+
+    doc = await async_db.collection("users").document("bob").get()
+    assert doc.exists
+    assert doc.to_dict() == {"name": "Bob"}
+
+
+async def test_async_write_visible_to_sync():
+    shared_data: dict = {}
+    shared_written_docs: set = set()
+    sync_db = MockFirestore(data=shared_data, written_docs=shared_written_docs)
+    async_db = AsyncFakeFirestoreClient(data=shared_data, written_docs=shared_written_docs)
+
+    await async_db.collection("users").document("carol").set({"name": "Carol"})
+
+    doc = sync_db.collection("users").document("carol").get()
+    assert doc.exists
+    assert doc.to_dict() == {"name": "Carol"}
+
+
+async def test_reset_clears_shared_data_for_both_clients():
+    shared_data: dict = {}
+    shared_written_docs: set = set()
+    sync_db = MockFirestore(data=shared_data, written_docs=shared_written_docs)
+    async_db = AsyncFakeFirestoreClient(data=shared_data, written_docs=shared_written_docs)
+
+    sync_db.collection("users").document("dave").set({"name": "Dave"})
+    async_db.reset()
+
+    doc = sync_db.collection("users").document("dave").get()
+    assert not doc.exists
+
+
+async def test_async_mock_firestore_alias():
+    from fake_firestore import AsyncMockFirestore
+
+    shared_data: dict = {}
+    shared_written_docs: set = set()
+    sync_db = MockFirestore(data=shared_data, written_docs=shared_written_docs)
+    async_db = AsyncMockFirestore(data=shared_data, written_docs=shared_written_docs)
+
+    sync_db.collection("items").document("x").set({"val": 42})
+
+    doc = await async_db.collection("items").document("x").get()
+    assert doc.exists
+    assert doc.to_dict() == {"val": 42}

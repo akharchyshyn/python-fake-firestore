@@ -44,6 +44,9 @@ from fake_firestore.transaction import (
     transactional,
 )
 
+# Backward compatibility alias for async client
+AsyncMockFirestore = AsyncFakeFirestoreClient
+
 __all__ = [
     # Exceptions
     "AlreadyExists",
@@ -70,6 +73,7 @@ __all__ = [
     "async_transactional",
     # Backward compatibility aliases
     "MockFirestore",
+    "AsyncMockFirestore",
     "CollectionReference",
     "CollectionGroup",
     "DocumentReference",
