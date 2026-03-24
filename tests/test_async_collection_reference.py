@@ -73,6 +73,31 @@ async def test_where_equals(fs):
 
 
 @pytest.mark.asyncio
+async def test_query_snapshots_preserve_async_reference(fs):
+    await fs.collection("foo").document("first").set({"valid": True})
+
+    docs = [doc async for doc in fs.collection("foo").where("valid", "==", True).stream()]
+
+    assert len(docs) == 1
+    assert isinstance(docs[0].reference, AsyncFakeDocumentReference)
+
+    await docs[0].reference.update({"updated": True})
+
+    refreshed = await fs.collection("foo").document("first").get()
+    assert refreshed.to_dict() == {"valid": True, "updated": True}
+
+
+@pytest.mark.asyncio
+async def test_query_get_preserves_async_reference(fs):
+    await fs.collection("foo").document("first").set({"score": 10})
+
+    docs = await fs.collection("foo").where("score", "==", 10).get()
+
+    assert len(docs) == 1
+    assert isinstance(docs[0].reference, AsyncFakeDocumentReference)
+
+
+@pytest.mark.asyncio
 async def test_order_by(fs):
     await fs.collection("foo").document("first").set({"order": 2})
     await fs.collection("foo").document("second").set({"order": 1})

@@ -65,6 +65,21 @@ async def test_collection_group(fs):
 
 
 @pytest.mark.asyncio
+async def test_collection_group_snapshots_preserve_async_reference(fs):
+    await fs.collection("top").document("d1").collection("sub").document("s1").set({"val": 10})
+
+    docs = [doc async for doc in fs.collection_group("sub").stream()]
+
+    assert len(docs) == 1
+    assert isinstance(docs[0].reference, AsyncFakeDocumentReference)
+
+    await docs[0].reference.update({"updated": True})
+
+    refreshed = await fs.collection("top").document("d1").collection("sub").document("s1").get()
+    assert refreshed.to_dict() == {"val": 10, "updated": True}
+
+
+@pytest.mark.asyncio
 async def test_collection_group_with_where(fs):
     await fs.collection("top").document("d1").collection("items").document("i1").set({"score": 10})
     await fs.collection("top").document("d1").collection("items").document("i2").set({"score": 20})

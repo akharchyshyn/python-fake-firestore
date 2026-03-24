@@ -10,20 +10,20 @@ from fake_firestore._helpers import (
 from fake_firestore.async_document import AsyncFakeDocumentReference
 from fake_firestore.async_query import AsyncFakeQuery
 from fake_firestore.collection import FakeCollectionReference
-from fake_firestore.document import FakeDocumentReference, FakeDocumentSnapshot
+from fake_firestore.document import FakeDocumentSnapshot
 
 
 class AsyncFakeCollectionReference(FakeCollectionReference):
-    def _sync_document(self, document_id: str) -> FakeDocumentReference:
-        """Create a sync FakeDocumentReference for internal use."""
-        new_path = self._path + [document_id]
-        return FakeDocumentReference(
-            self._data,
-            new_path,
-            parent=self,
-            written_docs=self._written_docs,
-            _collection_factory=FakeCollectionReference,
-        )
+    def _sync_snapshot(self, document_id: str) -> FakeDocumentSnapshot:
+        """Build a snapshot synchronously while preserving the async document reference."""
+        doc_ref = self.document(document_id)
+        if tuple(doc_ref._path) not in self._written_docs:
+            return FakeDocumentSnapshot(doc_ref, None)
+        try:
+            data = get_by_path(self._data, doc_ref._path)
+        except KeyError:
+            data = {}
+        return FakeDocumentSnapshot(doc_ref, data)
 
     def _sync_stream(self, transaction: Any = None) -> Iterator[FakeDocumentSnapshot]:
         """Sync stream for use by queries internally."""
@@ -32,7 +32,7 @@ class AsyncFakeCollectionReference(FakeCollectionReference):
         except KeyError:
             return
         for key in sorted(collection):
-            doc_snapshot = self._sync_document(key).get()
+            doc_snapshot = self._sync_snapshot(key)
             if doc_snapshot.exists:
                 yield doc_snapshot
 
